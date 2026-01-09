@@ -1,0 +1,202 @@
+.card {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--color-primary);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.icon {
+  font-size: 2rem;
+}
+
+.name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.amounts {
+  margin-bottom: var(--spacing-md);
+}
+
+.currentAmount {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.targetAmount {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.progressBar {
+  height: 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xs);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width var(--transition-slow);
+  border-radius: var(--radius-full);
+}
+
+.progressText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-md);
+}
+
+.addButton {
+  width: 100%;
+  padding: 0.625rem var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.actionButtons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xs);
+}
+
+.actionBtn,
+.actionBtnExpense,
+.actionBtnDebt {
+  padding: 0.625rem var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.actionBtn {
+  color: white;
+  background: var(--color-success);
+  border: none;
+
+  &:hover {
+    background: #0ea572;
+    transform: translateY(-1px);
+  }
+}
+
+.actionBtnExpense {
+  color: white;
+  background: var(--color-warning);
+  border: none;
+
+  &:hover {
+    background: #dc7609;
+    transform: translateY(-1px);
+  }
+}
+
+.actionBtnDebt {
+  color: white;
+  background: var(--color-error);
+  border: none;
+
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+  }
+}
+
+.actionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.saveButton,
+.cancelButton {
+  flex: 1;
+  padding: 0.625rem var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.saveButton {
+  color: white;
+  background: var(--color-primary);
+  border: none;
+
+  &:hover {
+    background: var(--color-primary-dark);
+  }
+}
+
+.cancelButton {
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+
+  &:hover {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+}
