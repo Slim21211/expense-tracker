@@ -383,7 +383,7 @@ function IncomeCard({
                           }
                         >
                           {diff !== 0 &&
-                            `${diff <= 0 ? '+' : ''}${Math.abs(
+                            `${diff <= 0 ? '+ ' : '- '}${Math.abs(
                               diff
                             ).toLocaleString('ru-RU')} ₽`}
                         </td>
