@@ -10,7 +10,8 @@ interface PiggyBankCardProps {
   piggyBank: PiggyBank;
 }
 
-type ActionType = 'deposit' | 'expense' | 'debt' | null;
+// ✅ ИСПРАВЛЕНИЕ: Убрали 'debt' из типов
+type ActionType = 'deposit' | 'expense' | null;
 
 export const PiggyBankCard = ({ piggyBank }: PiggyBankCardProps) => {
   const [updatePiggyBank] = useUpdatePiggyBankMutation();
@@ -37,7 +38,7 @@ export const PiggyBankCard = ({ piggyBank }: PiggyBankCardProps) => {
         current_amount: piggyBank.current_amount + amountValue,
       });
     } else {
-      // Расход или долг - создаем транзакцию (баланс обновится автоматически через триггер)
+      // Расход - создаем транзакцию (баланс обновится автоматически через триггер)
       await createTransaction({
         piggy_bank_id: piggyBank.id,
         type: actionType as PiggyBankTransactionType,
@@ -107,23 +108,18 @@ export const PiggyBankCard = ({ piggyBank }: PiggyBankCardProps) => {
               >
                 − Расход
               </button>
-              <button
-                onClick={() => setActionType('debt')}
-                className={styles.actionBtnDebt}
-              >
-                💳 В долг
-              </button>
+              {/* ❌ УБРАНО: Кнопка "В долг" */}
             </div>
           ) : (
             <>
               <div className={styles.actionTitle}>
                 {actionType === 'deposit' && '💰 Пополнение'}
                 {actionType === 'expense' && '🛒 Расход'}
-                {actionType === 'debt' && '💳 Взять в долг'}
               </div>
 
               <input
-                type="number" step="0.01"
+                type="number"
+                step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Сумма"
@@ -131,7 +127,7 @@ export const PiggyBankCard = ({ piggyBank }: PiggyBankCardProps) => {
                 autoFocus
               />
 
-              {(actionType === 'expense' || actionType === 'debt') && (
+              {actionType === 'expense' && (
                 <input
                   type="text"
                   value={description}
@@ -143,11 +139,7 @@ export const PiggyBankCard = ({ piggyBank }: PiggyBankCardProps) => {
 
               <div className={styles.buttonGroup}>
                 <button onClick={handleAction} className={styles.saveButton}>
-                  {actionType === 'deposit'
-                    ? 'Пополнить'
-                    : actionType === 'expense'
-                    ? 'Списать'
-                    : 'Взять'}
+                  {actionType === 'deposit' ? 'Пополнить' : 'Списать'}
                 </button>
                 <button onClick={handleCancel} className={styles.cancelButton}>
                   Отмена
