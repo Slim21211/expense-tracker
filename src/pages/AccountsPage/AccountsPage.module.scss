@@ -1,0 +1,124 @@
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 18%, var(--color-surface-elevated)),
+    var(--color-surface-elevated) 70%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: var(--radius-xl);
+}
+
+.summaryLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.summaryValue {
+  margin-bottom: var(--spacing-md);
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-tertiary);
+}
+
+.section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+  padding: 0 var(--spacing-xs);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card {
+  padding: 0 var(--spacing-sm) 0 var(--spacing-md);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+}
+
+.linkButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+@media (min-width: 768px) {
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'label stats'
+      'value stats';
+    align-items: center;
+    column-gap: var(--spacing-xl);
+    padding: var(--spacing-lg);
+  }
+
+  .summaryLabel {
+    grid-area: label;
+    align-self: end;
+  }
+
+  .summaryValue {
+    grid-area: value;
+    align-self: start;
+    margin-bottom: 0;
+  }
+
+  .summaryStats {
+    grid-area: stats;
+    grid-template-columns: repeat(3, auto);
+    column-gap: var(--spacing-xl);
+  }
+}
+
+.loading {
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}

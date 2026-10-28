@@ -1,12 +1,12 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-md);
+  background: rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(4px);
   z-index: var(--z-modal-backdrop);
   animation: fadeIn var(--transition-fast);
 }
@@ -15,31 +15,25 @@
   from {
     opacity: 0;
   }
-  to {
-    opacity: 1;
-  }
 }
 
 .modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   background: var(--color-surface-elevated);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
-  max-width: 90%;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
   z-index: var(--z-modal);
-  animation: slideUp var(--transition-base);
+  animation: popIn var(--transition-base);
 }
 
-@keyframes slideUp {
+@keyframes popIn {
   from {
-    transform: translateY(20px);
+    transform: translateY(12px);
     opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
   }
 }
 
@@ -47,45 +41,66 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border);
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm) var(--spacing-lg);
 }
 
 .title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .closeButton {
-  width: 32px;
-  height: 32px;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.closeButton:hover {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  background: var(--color-background);
+  border-radius: var(--radius-full);
 }
 
 .content {
-  padding: var(--spacing-lg);
+  // Отступ шторки — дочерние блоки с прокруткой выходят на него, чтобы не обрезаться
+  --sheet-pad: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--sheet-pad) var(--spacing-lg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
+// На телефоне — «шторка» снизу во всю ширину
 @media (max-width: 640px) {
-  .modal {
-    max-height: 95vh;
-    max-width: 95%;
+  .backdrop {
+    align-items: flex-end;
+    padding: 0;
   }
 
-  .header,
+  .modal {
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    animation: sheetIn var(--transition-slow);
+  }
+
+  .header {
+    padding-left: var(--spacing-md);
+  }
+
   .content {
-    padding: var(--spacing-md);
+    --sheet-pad: var(--spacing-md);
+    padding: var(--spacing-sm) var(--sheet-pad)
+      calc(var(--spacing-md) + env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
   }
 }

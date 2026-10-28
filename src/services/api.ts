@@ -1,76 +1,45 @@
-import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import { piggyBanksEndpoints } from './api/piggyBanks';
-import { creditsEndpoints } from './api/credits';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { accountsEndpoints } from './api/accounts';
+import { transactionsEndpoints } from './api/transactions';
 import { budgetMonthsEndpoints } from './api/budgetMonths';
 import { categoriesEndpoints } from './api/categories';
 import { incomeItemsEndpoints } from './api/incomeItems';
-import { expenseItemsEndpoints } from './api/expenseItems';
-import { expenseTransactionsEndpoints } from './api/expenseTransactions';
-import { incomeDebtsEndpoints } from './api/incomeDebts';
+import { baseQuery } from './api/types';
 
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fakeBaseQuery(),
-  keepUnusedDataFor: 300, // ✅ 5 минут кеш - избегает повторных запросов
-  tagTypes: [
-    'PiggyBanks',
-    'Credits',
-    'BudgetMonths',
-    'ExpenseCategories',
-    'IncomeItems',
-    'ExpenseItems',
-    'PiggyBankTransactions',
-    'ExpenseTransactions',
-    'IncomeDebts',
-  ],
+  baseQuery,
+  keepUnusedDataFor: 300, // 5 минут кеш
+  tagTypes: ['Accounts', 'Transactions', 'BudgetMonths', 'ExpenseCategories'],
   endpoints: (builder) => ({
-    ...piggyBanksEndpoints(builder),
-    ...creditsEndpoints(builder),
+    ...accountsEndpoints(builder),
+    ...transactionsEndpoints(builder),
     ...budgetMonthsEndpoints(builder),
     ...categoriesEndpoints(builder),
     ...incomeItemsEndpoints(builder),
-    ...expenseItemsEndpoints(builder),
-    ...expenseTransactionsEndpoints(builder),
-    ...incomeDebtsEndpoints(builder),
   }),
 });
 
 export const {
-  // Piggy Banks
-  useGetPiggyBanksQuery,
-  useCreatePiggyBankMutation,
-  useUpdatePiggyBankMutation,
-  useDeletePiggyBankMutation,
-  useGetPiggyBankTransactionsQuery,
-  useCreatePiggyBankTransactionMutation,
-  // Credits
-  useGetCreditsQuery,
-  useCreateCreditMutation,
-  useUpdateCreditMutation,
-  useDeleteCreditMutation,
+  // Accounts
+  useGetAccountsQuery,
+  useCreateAccountMutation,
+  useUpdateAccountMutation,
+  // Transactions
+  useGetTransactionsQuery,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
+  useDeleteTransactionMutation,
   // Budget Months
   useGetBudgetMonthsQuery,
   useGetBudgetMonthByIdQuery,
   useCreateBudgetMonthMutation,
+  // Income plans
+  useSaveIncomePlanMutation,
+  useDeleteIncomeItemMutation,
   // Categories
   useGetExpenseCategoriesQuery,
   useCreateExpenseCategoryMutation,
+  useUpdateExpenseCategoryMutation,
   useDeleteExpenseCategoryMutation,
-  // Income Items
-  useCreateIncomeItemMutation,
-  useUpdateIncomeItemMutation,
-  useDeleteIncomeItemMutation,
-  useAddActualIncomeMutation,
-  useCreateIncomeWithPlansMutation,
-  // Expense Items
-  useCreateExpenseItemMutation,
-  useUpdateExpenseItemMutation,
-  useDeleteExpenseItemMutation,
-  // Expense Transactions
-  useGetExpenseTransactionsQuery,
-  useCreateExpenseTransactionMutation,
-  useDeleteExpenseTransactionMutation,
-  // Income Debts
-  useCreateIncomeDebtMutation,
-  useGetIncomeDebtsQuery,
 } = api;

@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react';
+import { Icon } from '@/components/Icon/Icon';
 import styles from './Modal.module.scss';
 
 interface ModalProps {
@@ -13,10 +14,10 @@ export const Modal = ({ children, onClose, title, isOpen }: ModalProps) => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    
+
     document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
@@ -27,16 +28,24 @@ export const Modal = ({ children, onClose, title, isOpen }: ModalProps) => {
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className={styles.header}>
           {title && <h2 className={styles.title}>{title}</h2>}
-          <button onClick={onClose} className={styles.closeButton}>
-            ✕
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.closeButton}
+            aria-label="Закрыть"
+          >
+            <Icon name="close" size={18} />
           </button>
         </div>
-        <div className={styles.content}>
-          {children}
-        </div>
+        <div className={styles.content}>{children}</div>
       </div>
     </div>
   );

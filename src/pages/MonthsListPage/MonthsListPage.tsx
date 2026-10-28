@@ -1,34 +1,44 @@
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   useGetBudgetMonthsQuery,
   useCreateBudgetMonthMutation,
 } from '@/services/api';
-import styles from './MonthsListPage.module.scss';
+import { Modal } from '@/components/Modal/Modal';
+import { Icon } from '@/components/Icon/Icon';
+import type { BudgetMonthWithTotals } from '@/types/database';
 import { getCurrentMonth, getMonthName } from '@/utils/dateUtils';
+import { errorMessage, formatMoney } from '@/utils/ledger';
+import form from '@/styles/form.module.scss';
+import styles from './MonthsListPage.module.scss';
+
+// Предлагаем первый месяц, начиная с текущего, которого ещё нет
+function suggestMonth(months: BudgetMonthWithTotals[]) {
+  let { month, year } = getCurrentMonth();
+  while (months.some((m) => m.month === month && m.year === year)) {
+    month = month === 12 ? 1 : month + 1;
+    year = month === 1 ? year + 1 : year;
+  }
+  return { month, year };
+}
 
 export const MonthsListPage = () => {
   const navigate = useNavigate();
   const { data: months = [], isLoading } = useGetBudgetMonthsQuery();
-  const [createMonth] = useCreateBudgetMonthMutation();
-  const [isCreating, setIsCreating] = useState(false);
-  const [newMonthData, setNewMonthData] = useState(() => {
-    const { month, year } = getCurrentMonth();
-    return { month, year, name: '' };
-  });
+  const [createMonth, { isLoading: isSaving }] = useCreateBudgetMonthMutation();
+  const [newMonth, setNewMonth] = useState<null | { month: number; year: number }>(null);
 
-  const handleCreateMonth = async () => {
-    if (newMonthData.month && newMonthData.year) {
-      const result = await createMonth({
-        month: newMonthData.month,
-        year: newMonthData.year,
-        name: newMonthData.name || null,
-        is_archived: false,
-      });
+  const { year: currentYear } = getCurrentMonth();
+  const years = [currentYear - 1, currentYear, currentYear + 1];
 
-      if ('data' in result && result.data) {
-        navigate(`/months/${result.data.id}`);
-      }
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newMonth) return;
+    try {
+      const created = await createMonth({ ...newMonth, name: null }).unwrap();
+      navigate(`/months/${created.id}`);
+    } catch (error) {
+      alert(errorMessage(error));
     }
   };
 
@@ -39,158 +49,103 @@ export const MonthsListPage = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>📅 Месячные бюджеты</h1>
+        <h1 className={styles.title}>Бюджет</h1>
         <button
-          onClick={() => setIsCreating(true)}
-          className={styles.addButton}
+          onClick={() => setNewMonth(suggestMonth(months))}
+          className={styles.addBtn}
         >
-          + Создать месяц
+          <Icon name="plus" size={16} />
+          Месяц
         </button>
       </div>
 
-      {isCreating && (
-        <div className={styles.createForm}>
-          <h3 className={styles.formTitle}>Новый месяц</h3>
-
-          <div className={styles.formRow}>
-            <div className={styles.field}>
-              <label className={styles.label}>Месяц</label>
-              <select
-                value={newMonthData.month}
-                onChange={(e) =>
-                  setNewMonthData({
-                    ...newMonthData,
-                    month: parseInt(e.target.value),
-                  })
-                }
-                className={styles.select}
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
-                  <option key={m} value={m}>
-                    {getMonthName(m)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Год</label>
-              <input
-                type="number"
-                step="0.01"
-                value={newMonthData.year}
-                onChange={(e) =>
-                  setNewMonthData({
-                    ...newMonthData,
-                    year: parseInt(e.target.value),
-                  })
-                }
-                className={styles.input}
-                min="2020"
-                max="2030"
-              />
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>Название (опционально)</label>
-            <input
-              type="text"
-              value={newMonthData.name}
-              onChange={(e) =>
-                setNewMonthData({ ...newMonthData, name: e.target.value })
-              }
-              placeholder={`${getMonthName(newMonthData.month)} ${
-                newMonthData.year
-              }`}
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.formActions}>
-            <button onClick={handleCreateMonth} className={styles.createBtn}>
-              Создать
-            </button>
-            <button
-              onClick={() => setIsCreating(false)}
-              className={styles.cancelBtn}
-            >
-              Отмена
-            </button>
-          </div>
-        </div>
-      )}
-
       {months.length === 0 ? (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📊</div>
-          <h2 className={styles.emptyTitle}>Нет бюджетов</h2>
-          <p className={styles.emptyText}>
-            Создайте первый месячный бюджет для планирования доходов и расходов
-          </p>
+          <p>Пока нет ни одного месяца</p>
           <button
-            onClick={() => setIsCreating(true)}
-            className={styles.emptyButton}
+            onClick={() => setNewMonth(suggestMonth(months))}
+            className={form.primaryBtn}
           >
-            Создать первый бюджет
+            Создать первый месяц
           </button>
         </div>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.list}>
           {months.map((month) => (
-            <div
+            <button
               key={month.id}
               onClick={() => navigate(`/months/${month.id}`)}
               className={styles.card}
             >
-              <div className={styles.cardHeader}>
-                <h3 className={styles.cardTitle}>
+              <span className={styles.cardTop}>
+                <span className={styles.cardTitle}>
                   {month.name || `${getMonthName(month.month)} ${month.year}`}
-                </h3>
-                <div className={styles.cardDate}>
-                  {getMonthName(month.month)} {month.year}
-                </div>
-              </div>
-
-              <div className={styles.cardStats}>
-                <div className={styles.stat}>
-                  <div className={styles.statLabel}>Доход</div>
-                  <div className={styles.statValue}>
-                    {month.total_actual_income
-                      ? `${month.total_actual_income.toLocaleString('ru-RU')} ₽`
-                      : '—'}
-                  </div>
-                </div>
-                <div className={styles.stat}>
-                  <div className={styles.statLabel}>Расходы</div>
-                  <div className={styles.statValue}>
-                    {month.total_actual_expenses
-                      ? `${month.total_actual_expenses.toLocaleString(
-                          'ru-RU'
-                        )} ₽`
-                      : '—'}
-                  </div>
-                </div>
-                <div className={styles.stat}>
-                  <div className={styles.statLabel}>Остаток</div>
-                  <div
-                    className={`${styles.statValue} ${
-                      month.balance && month.balance < 0 ? styles.negative : ''
-                    }`}
-                  >
-                    {month.balance !== undefined
-                      ? `${month.balance.toLocaleString('ru-RU')} ₽`
-                      : '—'}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.cardFooter}>
-                <span className={styles.viewLink}>Открыть →</span>
-              </div>
-            </div>
+                </span>
+                <span
+                  className={`${styles.remaining} ${
+                    month.remaining < 0 ? styles.negative : ''
+                  }`}
+                >
+                  {formatMoney(month.remaining)}
+                </span>
+              </span>
+              <span className={styles.stats}>
+                <span>
+                  <span className={styles.statLabel}>Поступило</span>
+                  {formatMoney(month.actual_income)}
+                </span>
+                <span>
+                  <span className={styles.statLabel}>Потрачено</span>
+                  {formatMoney(month.actual_expenses)}
+                </span>
+              </span>
+            </button>
           ))}
         </div>
+      )}
+
+      {newMonth && (
+        <Modal isOpen={true} onClose={() => setNewMonth(null)} title="Новый месяц">
+          <form onSubmit={handleCreate} className={form.form}>
+            <div className={form.row}>
+              <label className={form.field}>
+                <span className={form.label}>Месяц</span>
+                <select
+                  value={newMonth.month}
+                  onChange={(e) =>
+                    setNewMonth({ ...newMonth, month: Number(e.target.value) })
+                  }
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>
+                      {getMonthName(m)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={form.field}>
+                <span className={form.label}>Год</span>
+                <select
+                  value={newMonth.year}
+                  onChange={(e) =>
+                    setNewMonth({ ...newMonth, year: Number(e.target.value) })
+                  }
+                >
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className={form.actions}>
+              <button type="submit" disabled={isSaving} className={form.primaryBtn}>
+                {isSaving ? 'Создание...' : 'Создать'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

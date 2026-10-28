@@ -5,13 +5,13 @@ import { supabase } from '@/services/supabase';
 import { setUser } from '@/store/slices/authSlice';
 import type { RootState } from '@/store';
 import { AuthPage } from '@/pages/AuthPage/AuthPage';
-import { DashboardPage } from '@/pages/DashboardPage/DashboardPage';
+import { AccountsPage } from '@/pages/AccountsPage/AccountsPage';
 import { Layout } from '@/components/Layout/Layout';
 import '@/styles/globals.scss';
-import { MonthBudgetPage } from '@/pages/Monthbudgetpage/Monthbudgetpage';
+import { MonthBudgetPage } from '@/pages/Monthbudgetpage/MonthBudgetPage';
+import { TransactionsPage } from '@/pages/TransactionsPage/TransactionsPage';
 import { MonthsListPage } from './pages/MonthsListPage/MonthsListPage';
 import { CategoriesPage } from './pages/Categoriespage/Categoriespage';
-import { CreditsPage } from './pages/Creditspage/Creditspage';
 
 function App() {
   const dispatch = useDispatch();
@@ -65,11 +65,12 @@ function App() {
             isAuthenticated ? (
               <Layout>
                 <Routes>
-                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/" element={<AccountsPage />} />
+                  <Route path="/transactions" element={<TransactionsPage />} />
                   <Route path="/months" element={<MonthsListPage />} />
                   <Route path="/months/:id" element={<MonthBudgetPage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/credits" element={<CreditsPage />} />
+                  <Route path="/credits" element={<Navigate to="/" replace />} />
                   <Route
                     path="/analytics"
                     element={<div>Аналитика (в разработке)</div>}

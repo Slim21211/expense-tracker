@@ -1,0 +1,136 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+}
+
+// Перебиваем базовый стиль полей из globals.scss
+input.amountInput {
+  width: auto;
+  min-width: 3ch;
+  max-width: 100%;
+  field-sizing: content;
+  min-height: 0;
+  padding: 0;
+  font-size: 2.75rem;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  background: transparent;
+  border: none;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.currency {
+  font-size: 2rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+}
+
+.categories {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0.625rem 0.25rem;
+  background: var(--color-background);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.categoryActive {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.categoryIcon {
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  color: var(--color-text-secondary);
+}
+
+.categoryName {
+  max-width: 100%;
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  margin: 0 calc(-1 * var(--sheet-pad, 0px));
+  padding: 0 var(--sheet-pad, 0px);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Чип — подпись, поверх которой лежит прозрачный нативный select/date
+.chip {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4375rem 0.75rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+input.chipControl,
+select.chipControl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xs);
+}
+
+@media (min-width: 480px) {
+  .categories {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

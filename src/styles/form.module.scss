@@ -1,0 +1,237 @@
+// Общие стили форм и кнопок. Базовый вид полей задан в globals.scss.
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.negative {
+  color: var(--color-error);
+}
+
+// Сегментированный переключатель (тип операции, тип счёта)
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.segment {
+  flex: 1 0 auto;
+  padding: 0.5rem 0.625rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  border-radius: calc(var(--radius-md) - 3px);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.segmentActive {
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+// Кнопки
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.primaryBtn,
+.secondaryBtn,
+.dangerBtn {
+  min-height: var(--control-height);
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+.primaryBtn {
+  flex: 1;
+  color: white;
+  background: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+  }
+}
+
+.secondaryBtn {
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+}
+
+.dangerBtn {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.linkBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+// Раскрывающийся блок «Дополнительно»
+.details {
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--spacing-sm);
+
+  summary {
+    padding: var(--spacing-xs) 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary);
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+.detailsBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+// Выбор иконки/цвета
+.pickerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pickerBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+  background: var(--color-background);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.pickerBtnActive {
+  border-color: var(--color-primary);
+}
+
+// Строка плана расходов
+.planRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem 2.5rem;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.iconBtn {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    color: var(--color-error);
+    background: var(--color-error-soft);
+  }
+}
+
+.summaryLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+
+  strong {
+    font-size: var(--font-size-base);
+  }
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 480px) {
+  .planRow {
+    grid-template-columns: minmax(0, 1fr) 5.5rem 2.5rem;
+  }
+}

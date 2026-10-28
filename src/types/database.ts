@@ -1,67 +1,5 @@
-// Database types
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
-
-export interface Database {
-  public: {
-    Tables: {
-      user_profiles: {
-        Row: UserProfile;
-        Insert: Omit<UserProfile, 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<UserProfile, 'id' | 'created_at'>>;
-      };
-      piggy_banks: {
-        Row: PiggyBank;
-        Insert: Omit<PiggyBank, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<PiggyBank, 'id' | 'user_id' | 'created_at'>>;
-      };
-      piggy_bank_transactions: {
-        Row: PiggyBankTransaction;
-        Insert: Omit<PiggyBankTransaction, 'id' | 'created_at'>;
-        Update: Partial<
-          Omit<PiggyBankTransaction, 'id' | 'user_id' | 'created_at'>
-        >;
-      };
-      budget_months: {
-        Row: BudgetMonth;
-        Insert: Omit<BudgetMonth, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<BudgetMonth, 'id' | 'user_id' | 'created_at'>>;
-      };
-      expense_categories: {
-        Row: ExpenseCategory;
-        Insert: Omit<ExpenseCategory, 'id' | 'created_at'>;
-        Update: Partial<Omit<ExpenseCategory, 'id' | 'created_at'>>;
-      };
-      income_items: {
-        Row: IncomeItem;
-        Insert: Omit<IncomeItem, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<IncomeItem, 'id' | 'user_id' | 'created_at'>>;
-      };
-      expense_items: {
-        Row: ExpenseItem;
-        Insert: Omit<ExpenseItem, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<ExpenseItem, 'id' | 'user_id' | 'created_at'>>;
-      };
-      expense_transactions: {
-        Row: ExpenseTransaction;
-        Insert: Omit<ExpenseTransaction, 'id' | 'created_at'>;
-        Update: Partial<
-          Omit<ExpenseTransaction, 'id' | 'user_id' | 'created_at'>
-        >;
-      };
-      income_debts: {
-        Row: IncomeDebt;
-        Insert: Omit<IncomeDebt, 'id' | 'created_at'>;
-        Update: Partial<Omit<IncomeDebt, 'id' | 'user_id' | 'created_at'>>;
-      };
-    };
-  };
-}
+// Типы таблиц БД. Деньги живут только в transactions,
+// балансы и итоги — вычисляемые представления.
 
 export interface UserProfile {
   id: string;
@@ -72,35 +10,59 @@ export interface UserProfile {
   updated_at: string;
 }
 
-export interface PiggyBank {
+// regular — карты/наличные (бюджет месяца), savings — копилки, credit — кредиты
+export type AccountKind = 'regular' | 'savings' | 'credit';
+
+export interface Account {
   id: string;
   user_id: string;
   name: string;
-  target_amount: number;
-  current_amount: number;
-  color: string;
+  kind: AccountKind;
   icon: string;
+  color: string;
+  target_amount: number | null; // цель копилки / сумма кредита
+  sort_order: number;
   is_archived: boolean;
+  track_balance: boolean; // false — деньги вне учёта: баланс не показывается и не суммируется
   created_at: string;
   updated_at: string;
 }
 
-export type PiggyBankTransactionType =
-  | 'expense'
-  | 'debt'
-  | 'deposit'
-  | 'debt_repay';
+export interface AccountWithBalance extends Account {
+  balance: number;
+}
 
-export interface PiggyBankTransaction {
+export type TransactionKind = 'income' | 'expense' | 'transfer' | 'adjustment';
+
+export interface Transaction {
   id: string;
   user_id: string;
-  piggy_bank_id: string;
-  type: PiggyBankTransactionType;
+  kind: TransactionKind;
   amount: number;
+  from_account_id: string | null;
+  to_account_id: string | null;
+  category_id: string | null;
+  budget_month_id: string | null;
+  income_item_id: string | null;
+  date: string; // YYYY-MM-DD
   description: string | null;
-  transaction_date: string;
+  legacy_source: string | null;
   created_at: string;
+  updated_at: string;
 }
+
+export type TransactionDraft = Pick<
+  Transaction,
+  | 'kind'
+  | 'amount'
+  | 'from_account_id'
+  | 'to_account_id'
+  | 'category_id'
+  | 'budget_month_id'
+  | 'income_item_id'
+  | 'date'
+  | 'description'
+>;
 
 export interface BudgetMonth {
   id: string;
@@ -113,7 +75,18 @@ export interface BudgetMonth {
   updated_at: string;
 }
 
-export type ExpenseCategoryType = 'constant' | 'variable';
+export interface BudgetMonthTotals {
+  planned_income: number;
+  planned_expenses: number;
+  actual_income: number;
+  actual_expenses: number;
+  carry_over: number; // остаток всех предыдущих месяцев
+  remaining: number; // carry_over + actual_income - actual_expenses
+}
+
+export type BudgetMonthWithTotals = BudgetMonth & BudgetMonthTotals;
+
+export type ExpenseCategoryType = 'variable' | 'fixed';
 
 export interface ExpenseCategory {
   id: string;
@@ -123,139 +96,40 @@ export interface ExpenseCategory {
   icon: string;
   color: string;
   is_system: boolean;
+  is_archived: boolean;
   sort_order: number;
   created_at: string;
 }
 
+// План дохода. Факт считается по транзакциям с income_item_id
 export interface IncomeItem {
   id: string;
   user_id: string;
   budget_month_id: string;
   name: string;
   planned_amount: number;
-  actual_amount: number | null;
   planned_date: string | null;
-  actual_date: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// ExpenseItem используется для планов расходов
+// План расхода: на категорию или на перевод в копилку/кредит
 export interface ExpenseItem {
   id: string;
   user_id: string;
   budget_month_id: string;
-  category_id: string;
-  name: string | null; // Хранит income_item_id
+  income_item_id: string | null;
+  category_id: string | null;
+  target_account_id: string | null;
   planned_amount: number;
-  actual_amount: number | null;
-  transaction_date: string | null;
-  notes: string | null;
-  is_from_bank: boolean;
-  bank_transaction_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// ExpenseTransaction для фактических трат (они суммируются)
-export interface ExpenseTransaction {
-  id: string;
-  user_id: string;
-  budget_month_id: string;
-  income_item_id: string;
-  category_id: string;
-  amount: number;
-  description: string | null;
-  transaction_date: string;
-  created_at: string;
-}
-
-// IncomeDebt для взятия в долг из копилок
-export interface IncomeDebt {
-  id: string;
-  user_id: string;
-  income_item_id: string;
-  piggy_bank_id: string;
-  amount: number;
-  description: string | null;
-  created_at: string;
-}
-
-export interface BankTransaction {
-  id: string;
-  user_id: string;
-  bank_transaction_id: string;
-  amount: number;
-  currency: string;
-  description: string | null;
-  category: string | null;
-  transaction_date: string;
-  is_processed: boolean;
-  linked_expense_id: string | null;
-  raw_data: Json;
-  created_at: string;
-}
-
-export interface BankIntegration {
-  id: string;
-  user_id: string;
-  bank_name: string;
-  access_token_encrypted: string | null;
-  is_active: boolean;
-  last_sync_at: string | null;
-  sync_frequency: 'hourly' | 'daily' | 'manual';
-  created_at: string;
-  updated_at: string;
-}
-
-// Extended types
-export interface ExpenseItemWithCategory extends ExpenseItem {
-  category?: ExpenseCategory;
-}
-
-// ✅ ИСПРАВЛЕННЫЙ ИНТЕРФЕЙС
-export interface BudgetMonthWithData extends BudgetMonth {
-  income_items?: IncomeItemWithPlansAndTransactions[];
-  expense_items?: ExpenseItemWithCategory[];
-  expense_transactions?: ExpenseTransactionWithCategory[];
-  total_planned_income?: number;
-  total_actual_income?: number;
-  total_planned_expenses?: number;
-  total_actual_expenses?: number;
-  total_expenses?: number; // Для обратной совместимости
-  balance?: number; // Для обратной совместимости (устаревшее)
-  remaining_budget?: number; // ← ДОБАВЛЕНО
-}
-
-export interface IncomeItemWithPlansAndTransactions extends IncomeItem {
-  expense_plans?: ExpenseItemWithCategory[];
-  expense_transactions?: ExpenseTransactionWithCategory[];
-  income_debts?: IncomeDebtWithPiggyBank[];
-}
-
-export interface ExpenseTransactionWithCategory extends ExpenseTransaction {
-  category?: ExpenseCategory;
-}
-
-export interface IncomeDebtWithPiggyBank extends IncomeDebt {
-  piggy_bank?: PiggyBank;
-}
-
-export interface Credit {
-  id: string;
-  user_id: string;
-  name: string;
-  bank_name: string;
-  total_amount: number;
-  paid_amount: number;
-  interest_rate: number;
-  monthly_payment: number;
-  start_date: string;
-  end_date: string;
-  color: string;
-  icon: string;
-  is_archived: boolean;
-  created_at: string;
-  updated_at: string;
+export interface BudgetMonthDetails {
+  month: BudgetMonth;
+  income_items: IncomeItem[];
+  expense_items: ExpenseItem[];
+  transactions: Transaction[];
 }
