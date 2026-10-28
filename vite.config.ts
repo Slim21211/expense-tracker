@@ -3,7 +3,12 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
+// Путь, по которому приложение открывается на сайте. На GitHub Pages без своего
+// домена — /<репозиторий>/, со своим доменом — корень. Задаётся при сборке.
+const base = process.env.BASE_PATH || '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -14,11 +19,11 @@ export default defineConfig({
         short_name: 'Расходы',
         description: 'Приложение для учета расходов и планирования бюджета',
         theme_color: '#6366f1',
-        background_color: '#ffffff',
+        background_color: '#0f141d',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: base,
+        start_url: base,
         icons: [
           {
             src: 'pwa-192x192.png',

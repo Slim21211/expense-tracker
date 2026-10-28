@@ -7,7 +7,7 @@
 - **Frontend**: React, TypeScript, CSS Modules
 - **State Management**: Redux Toolkit, RTK Query
 - **Backend**: Supabase (PostgreSQL, Auth, Realtime)
-- **Deployment**: Vercel
+- **Deployment**: GitHub Pages (`.github/workflows/deploy.yml`, при пуше в `main`)
 - **PWA**: vite-plugin-pwa
 
 ## Установка и запуск
@@ -39,6 +39,17 @@ npm preview
 
 Бюджет месяца — это деньги на `regular`-счетах: перевод в копилку уменьшает остаток месяца,
 перевод между картами — нет. Остаток переносится в следующий месяц автоматически.
+
+## Деплой
+
+Сборку и публикацию при каждом пуше в `main` делает GitHub Actions.
+
+1. Settings → Pages → Source: **GitHub Actions**.
+2. Без своего домена сайт открывается по адресу `https://<user>.github.io/<репозиторий>/`.
+3. Свой домен: Settings → Pages → Custom domain. Затем переменная репозитория
+   `BASE_PATH` = `/` (Settings → Secrets and variables → Actions → Variables) и перезапуск деплоя.
+4. В Supabase (Authentication → URL Configuration) — адрес сайта в Site URL и
+   `<адрес>/reset-password` в Redirect URLs.
 
 ## Миграции
 

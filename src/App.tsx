@@ -3,8 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '@/services/supabase';
 import { setUser } from '@/store/slices/authSlice';
+import { absoluteAppUrl, appPathname } from '@/utils/appUrl';
 import type { RootState } from '@/store';
 import { AuthPage } from '@/pages/AuthPage/AuthPage';
+import { ResetPasswordPage } from '@/pages/AuthPage/ResetPasswordPage';
 import { AccountsPage } from '@/pages/AccountsPage/AccountsPage';
 import { Layout } from '@/components/Layout/Layout';
 import '@/styles/globals.scss';
@@ -28,8 +30,13 @@ function App() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       dispatch(setUser(session?.user ?? null));
+      // Ссылка из письма могла привести не на /reset-password (если адрес
+      // не разрешён в настройках Supabase) — всё равно ведём на смену пароля
+      if (event === 'PASSWORD_RECOVERY' && appPathname() !== '/reset-password') {
+        window.location.replace(absoluteAppUrl('reset-password'));
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -53,12 +60,13 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           path="/auth"
           element={isAuthenticated ? <Navigate to="/" replace /> : <AuthPage />}
         />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="/*"
           element={

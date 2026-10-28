@@ -6,6 +6,7 @@ import { QuickExpense } from '@/components/QuickExpense/QuickExpense';
 import { TransactionModal } from '@/components/TransactionModal/TransactionModal';
 import { Icon, type IconName } from '@/components/Icon/Icon';
 import type { Transaction } from '@/types/database';
+import { assetUrl } from '@/utils/appUrl';
 import styles from './Layout.module.scss';
 
 interface LayoutProps {
@@ -60,7 +61,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Link to="/" className={styles.logo}>
-            <img src="/logo.png" alt="" className={styles.logoMark} />
+            <img src={assetUrl('logo.png')} alt="" className={styles.logoMark} />
             <span className={styles.logoText}>Трекер расходов</span>
           </Link>
           <nav className={styles.topNav}>{NAV.map(navLink)}</nav>

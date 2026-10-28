@@ -1,35 +1,48 @@
+// Общие стили для входа и смены пароля
 .container {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-md);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
+  padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--color-primary) 18%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface);
 }
 
 .card {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
+  padding: var(--spacing-xl) var(--spacing-lg);
   background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
   text-align: center;
-  margin-bottom: var(--spacing-xl);
 }
 
-.icon {
-  font-size: 3rem;
+.logo {
+  width: 4.5rem;
+  height: 4.5rem;
   margin-bottom: var(--spacing-md);
 }
 
 .title {
   font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
   margin-bottom: var(--spacing-xs);
 }
 
@@ -38,82 +51,32 @@
   color: var(--color-text-secondary);
 }
 
-.form {
+.labelRow {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
+  align-items: center;
+  justify-content: space-between;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.label {
+.inlineLink {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+  color: var(--color-primary);
 }
 
-.input {
-  width: 100%;
+.error,
+.message {
   padding: 0.75rem var(--spacing-md);
-  font-size: var(--font-size-base);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .error {
-  padding: var(--spacing-md);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-md);
   color: var(--color-error);
-  font-size: var(--font-size-sm);
+  background: var(--color-error-soft);
 }
 
 .message {
-  padding: var(--spacing-md);
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--color-success);
-  border-radius: var(--radius-md);
   color: var(--color-success);
-  font-size: var(--font-size-sm);
-}
-
-.submitButton {
-  width: 100%;
-  padding: 0.875rem var(--spacing-lg);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: white;
-  background: var(--color-primary);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.submitButton:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.submitButton:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.submitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  background: var(--color-success-soft);
 }
 
 .footer {
@@ -121,32 +84,25 @@
   text-align: center;
 }
 
-.switchButton {
+.link {
   font-size: var(--font-size-sm);
-  color: var(--color-primary);
-  font-weight: var(--font-weight-medium);
-  transition: color var(--transition-fast);
-}
+  color: var(--color-text-secondary);
 
-.switchButton:hover {
-  color: var(--color-primary-dark);
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .container {
-    padding: var(--spacing-sm);
+  &:hover {
+    color: var(--color-primary);
   }
-  
+}
+
+// На телефоне карточка без рамки — во весь экран
+@media (max-width: 480px) {
   .card {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-md);
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
-  
-  .icon {
-    font-size: 2.5rem;
-  }
-  
-  .title {
-    font-size: var(--font-size-xl);
-  }
+}
+
+.fullWidth {
+  width: 100%;
 }
