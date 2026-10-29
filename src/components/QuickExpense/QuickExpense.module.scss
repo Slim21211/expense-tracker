@@ -27,8 +27,15 @@ input.amountInput {
   background: transparent;
   border: none;
 
+  caret-color: var(--color-primary);
+
   &:focus {
     box-shadow: none;
+  }
+
+  // Подсказка «0» под курсором выглядит как перечёркнутый ноль — прячем при вводе
+  &:focus::placeholder {
+    color: transparent;
   }
 }
 
@@ -45,6 +52,8 @@ input.amountInput {
 }
 
 .category {
+  // Одинаковая высота у плиток и заглушек при загрузке
+  min-height: 4.375rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -55,6 +64,16 @@ input.amountInput {
   border: 1.5px solid transparent;
   border-radius: var(--radius-md);
   transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.skeleton {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .categoryActive {

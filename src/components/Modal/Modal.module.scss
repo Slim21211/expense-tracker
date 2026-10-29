@@ -1,6 +1,10 @@
 .backdrop {
   position: fixed;
-  inset: 0;
+  // top и height подгоняются под видимую область (см. Modal.tsx)
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,7 +24,7 @@
 .modal {
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
+  max-height: 90%;
   display: flex;
   flex-direction: column;
   background: var(--color-surface-elevated);
@@ -83,7 +87,8 @@
 
   .modal {
     max-width: none;
-    max-height: 92dvh;
+    // от высоты подложки, то есть от видимой части экрана над клавиатурой
+    max-height: calc(100% - env(safe-area-inset-top) - var(--spacing-sm));
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     animation: sheetIn var(--transition-slow);
   }

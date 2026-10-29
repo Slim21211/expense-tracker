@@ -62,6 +62,9 @@ export const ResetPasswordPage = () => {
                 required
                 minLength={6}
                 autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 autoFocus
               />
             </label>
@@ -74,6 +77,9 @@ export const ResetPasswordPage = () => {
                 required
                 minLength={6}
                 autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </label>
 

@@ -85,6 +85,10 @@ export const AuthPage = () => {
               required
               autoComplete="email"
               inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint={mode === 'reset' ? 'send' : 'next'}
               autoFocus
             />
           </label>
@@ -111,6 +115,10 @@ export const AuthPage = () => {
                 required
                 minLength={6}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="go"
               />
             </label>
           )}

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Icon } from '@/components/Icon/Icon';
 import styles from './Modal.module.scss';
 
@@ -10,6 +10,28 @@ interface ModalProps {
 }
 
 export const Modal = ({ children, onClose, title, isOpen }: ModalProps) => {
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  // Экранная клавиатура на iOS не уменьшает окно, а перекрывает его:
+  // подгоняем подложку под видимую часть экрана, чтобы шторка стояла над клавиатурой
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const backdrop = backdropRef.current;
+    if (!viewport || !backdrop) return;
+
+    const fit = () => {
+      backdrop.style.top = `${viewport.offsetTop}px`;
+      backdrop.style.height = `${viewport.height}px`;
+    };
+    fit();
+    viewport.addEventListener('resize', fit);
+    viewport.addEventListener('scroll', fit);
+    return () => {
+      viewport.removeEventListener('resize', fit);
+      viewport.removeEventListener('scroll', fit);
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -27,7 +49,7 @@ export const Modal = ({ children, onClose, title, isOpen }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.backdrop} onClick={onClose}>
+    <div ref={backdropRef} className={styles.backdrop} onClick={onClose}>
       <div
         className={styles.modal}
         onClick={(e) => e.stopPropagation()}

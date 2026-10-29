@@ -26,8 +26,14 @@ const TOP_CATEGORIES = 7;
 
 export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
   const { data: accounts = [] } = useGetAccountsQuery();
-  const { data: categories = [] } = useGetExpenseCategoriesQuery();
-  const { data: recent = [] } = useGetTransactionsQuery({ limit: 300 });
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useGetExpenseCategoriesQuery();
+  const { data: recent = [], isLoading: recentLoading } = useGetTransactionsQuery({
+    limit: 300,
+  });
+  // Пока не пришли категории и история, порядок плиток неизвестен —
+  // показываем заглушки той же высоты, чтобы шторка не прыгала
+  const tilesLoading = categoriesLoading || recentLoading;
   const budget = useBudgetContext();
   const [createTransaction, { isLoading }] = useCreateTransactionMutation();
 
@@ -115,7 +121,11 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
         </label>
 
         <div className={styles.categories}>
-          {visibleCategories.map((c) => (
+          {tilesLoading &&
+            Array.from({ length: TOP_CATEGORIES + 1 }, (_, i) => (
+              <span key={i} className={`${styles.category} ${styles.skeleton}`} />
+            ))}
+          {!tilesLoading && visibleCategories.map((c) => (
             <button
               key={c.id}
               type="button"
@@ -128,7 +138,7 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
               <span className={styles.categoryName}>{c.name}</span>
             </button>
           ))}
-          {sortedCategories.length > TOP_CATEGORIES && (
+          {!tilesLoading && sortedCategories.length > TOP_CATEGORIES && (
             <button
               type="button"
               onClick={() => setShowAll(!showAll)}
