@@ -3,12 +3,16 @@ import { Modal } from '@/components/Modal/Modal';
 import { AmountInput } from '@/components/AmountInput/AmountInput';
 import {
   useGetAccountsQuery,
+  useGetBudgetMonthsQuery,
   useGetExpenseCategoriesQuery,
+  useGetRecentIncomePlansQuery,
   useSaveIncomePlanMutation,
 } from '@/services/api';
 import { Icon } from '@/components/Icon/Icon';
 import type { ExpenseItem, IncomeItem } from '@/types/database';
+import { getMonthName } from '@/utils/dateUtils';
 import { amountToInput, errorMessage, formatMoney, parseAmount } from '@/utils/ledger';
+import { monthDelta, shiftDate, shiftMonthNames } from '@/utils/planCopy';
 import styles from '@/styles/form.module.scss';
 
 interface Props {
@@ -37,6 +41,10 @@ export const IncomePlanModal = ({
   const { data: categories = [] } = useGetExpenseCategoriesQuery();
   const { data: accounts = [] } = useGetAccountsQuery();
   const [saveIncomePlan, { isLoading }] = useSaveIncomePlanMutation();
+  const { data: months = [] } = useGetBudgetMonthsQuery();
+  // Источники для «Заполнить из…» нужны только при создании нового дохода
+  const { data: sources = [] } = useGetRecentIncomePlansQuery(undefined, { skip: !!income });
+  const targetMonth = months.find((m) => m.id === budgetMonthId);
 
   const [name, setName] = useState(income?.name ?? '');
   const [plannedAmount, setPlannedAmount] = useState(
@@ -72,6 +80,23 @@ export const IncomePlanModal = ({
   const removeRow = (row: PlanRow) => {
     if (row.id) setRemovedPlanIds([...removedPlanIds, row.id]);
     setRows(rows.filter((r) => r.key !== row.key));
+  };
+
+  // Заполняет форму планом прошлого дохода; сохраняется только по кнопке
+  const fillFrom = (sourceId: string) => {
+    const source = sources.find((s) => s.id === sourceId);
+    if (!source) return;
+    const delta = targetMonth ? monthDelta(source.month, targetMonth) : 0;
+    setName(shiftMonthNames(source.name, delta));
+    setPlannedAmount(amountToInput(source.planned_amount));
+    setPlannedDate(shiftDate(source.planned_date, delta) ?? '');
+    setRows(
+      source.plans.map((p) => ({
+        key: crypto.randomUUID(),
+        target: planTarget(p),
+        amount: amountToInput(Number(p.planned_amount)),
+      }))
+    );
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -113,6 +138,22 @@ export const IncomePlanModal = ({
       title={income ? 'Редактировать план дохода' : 'Новый план дохода'}
     >
       <form onSubmit={handleSubmit} className={styles.form}>
+        {!income && sources.length > 0 && (
+          <label className={styles.field}>
+            <span className={styles.label}>Заполнить из прошлого дохода</span>
+            <select defaultValue="" onChange={(e) => fillFrom(e.target.value)}>
+              <option value="" disabled>
+                Выберите доход
+              </option>
+              {sources.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} · {s.month.name || `${getMonthName(s.month.month)} ${s.month.year}`}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <label className={styles.field}>
           <span className={styles.label}>Название дохода</span>
           <input

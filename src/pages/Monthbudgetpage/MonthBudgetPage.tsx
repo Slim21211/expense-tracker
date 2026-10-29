@@ -6,6 +6,7 @@ import {
   useGetBudgetMonthsQuery,
   useGetExpenseCategoriesQuery,
   useDeleteIncomeItemMutation,
+  useCopyMonthPlansMutation,
 } from '@/services/api';
 import { Modal } from '@/components/Modal/Modal';
 import { IncomePlanModal } from '@/components/IncomePlanModal/IncomePlanModal';
@@ -28,6 +29,7 @@ import {
   errorMessage,
   formatMoney,
 } from '@/utils/ledger';
+import { findPreviousMonth } from '@/utils/planCopy';
 import styles from './MonthBudgetPage.module.scss';
 
 type ActiveModal =
@@ -111,6 +113,7 @@ export const MonthBudgetPage = () => {
   const { data: accounts = [] } = useGetAccountsQuery();
   const { data: categories = [] } = useGetExpenseCategoriesQuery();
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+  const [copyMonthPlans, { isLoading: isCopying }] = useCopyMonthPlansMutation();
 
   if (isLoading) {
     return <div className={styles.loading}>Загрузка...</div>;
@@ -138,6 +141,16 @@ export const MonthBudgetPage = () => {
   };
 
   const unassigned = transactions.filter((t) => !t.income_item_id);
+  const sourceMonth = findPreviousMonth(months, month);
+
+  const handleCopyPlans = async () => {
+    if (!sourceMonth) return;
+    try {
+      await copyMonthPlans({ sourceMonthId: sourceMonth.id, targetMonthId: month.id }).unwrap();
+    } catch (err) {
+      alert(errorMessage(err));
+    }
+  };
   const openList = (title: string, list: Transaction[]) =>
     setActiveModal({ type: 'list', title, transactions: list });
 
@@ -214,6 +227,20 @@ export const MonthBudgetPage = () => {
           <div className={styles.empty}>
             <p>В этом месяце пока нет доходов</p>
             <p className={styles.muted}>Добавьте план дохода и распределите его по категориям</p>
+            {sourceMonth && (
+              <button
+                onClick={handleCopyPlans}
+                disabled={isCopying}
+                className={styles.copyBtn}
+              >
+                {isCopying
+                  ? 'Копирование...'
+                  : `Скопировать план из «${
+                      sourceMonth.name ||
+                      `${getMonthName(sourceMonth.month)} ${sourceMonth.year}`
+                    }»`}
+              </button>
+            )}
           </div>
         )}
 

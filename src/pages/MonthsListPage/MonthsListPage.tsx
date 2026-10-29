@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   useGetBudgetMonthsQuery,
   useCreateBudgetMonthMutation,
+  useCopyMonthPlansMutation,
 } from '@/services/api';
 import { Modal } from '@/components/Modal/Modal';
 import { Icon } from '@/components/Icon/Icon';
 import type { BudgetMonthWithTotals } from '@/types/database';
 import { getCurrentMonth, getMonthName } from '@/utils/dateUtils';
 import { errorMessage, formatMoney } from '@/utils/ledger';
+import { findPreviousMonth } from '@/utils/planCopy';
 import form from '@/styles/form.module.scss';
 import styles from './MonthsListPage.module.scss';
 
@@ -25,8 +27,15 @@ function suggestMonth(months: BudgetMonthWithTotals[]) {
 export const MonthsListPage = () => {
   const navigate = useNavigate();
   const { data: months = [], isLoading } = useGetBudgetMonthsQuery();
-  const [createMonth, { isLoading: isSaving }] = useCreateBudgetMonthMutation();
+  const [createMonth, { isLoading: isCreating }] = useCreateBudgetMonthMutation();
+  const [copyMonthPlans, { isLoading: isCopying }] = useCopyMonthPlansMutation();
   const [newMonth, setNewMonth] = useState<null | { month: number; year: number }>(null);
+  const [copyPlans, setCopyPlans] = useState(true);
+  const isSaving = isCreating || isCopying;
+
+  const sourceMonth = newMonth ? findPreviousMonth(months, newMonth) : undefined;
+  const monthTitle = (m: { month: number; year: number; name: string | null }) =>
+    m.name || `${getMonthName(m.month)} ${m.year}`;
 
   const { year: currentYear } = getCurrentMonth();
   const years = [currentYear - 1, currentYear, currentYear + 1];
@@ -36,6 +45,12 @@ export const MonthsListPage = () => {
     if (!newMonth) return;
     try {
       const created = await createMonth({ ...newMonth, name: null }).unwrap();
+      if (copyPlans && sourceMonth) {
+        await copyMonthPlans({
+          sourceMonthId: sourceMonth.id,
+          targetMonthId: created.id,
+        }).unwrap();
+      }
       navigate(`/months/${created.id}`);
     } catch (error) {
       alert(errorMessage(error));
@@ -79,7 +94,7 @@ export const MonthsListPage = () => {
             >
               <span className={styles.cardTop}>
                 <span className={styles.cardTitle}>
-                  {month.name || `${getMonthName(month.month)} ${month.year}`}
+                  {monthTitle(month)}
                 </span>
                 <span
                   className={`${styles.remaining} ${
@@ -139,6 +154,16 @@ export const MonthsListPage = () => {
                 </select>
               </label>
             </div>
+            {sourceMonth && (
+              <label className={form.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={copyPlans}
+                  onChange={(e) => setCopyPlans(e.target.checked)}
+                />
+                Скопировать доходы и план расходов из «{monthTitle(sourceMonth)}»
+              </label>
+            )}
             <div className={form.actions}>
               <button type="submit" disabled={isSaving} className={form.primaryBtn}>
                 {isSaving ? 'Создание...' : 'Создать'}

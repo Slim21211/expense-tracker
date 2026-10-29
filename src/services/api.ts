@@ -36,6 +36,8 @@ export const {
   useCreateBudgetMonthMutation,
   // Income plans
   useSaveIncomePlanMutation,
+  useGetRecentIncomePlansQuery,
+  useCopyMonthPlansMutation,
   useDeleteIncomeItemMutation,
   // Categories
   useGetExpenseCategoriesQuery,
