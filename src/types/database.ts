@@ -24,15 +24,20 @@ export interface Account {
   sort_order: number;
   is_archived: boolean;
   track_balance: boolean; // false — деньги вне учёта: баланс не показывается и не суммируется
+  opening_debt: number; // копилка: ручная поправка долга (деньги не двигает)
   created_at: string;
   updated_at: string;
 }
 
 export interface AccountWithBalance extends Account {
   balance: number;
+  debt: number; // копилка: взято из неё в долг минус возвращено
 }
 
 export type TransactionKind = 'income' | 'expense' | 'transfer' | 'adjustment';
+
+// Назначение перевода: взял из копилки в долг / вернул долг
+export type TransferPurpose = 'loan' | 'repayment';
 
 export interface Transaction {
   id: string;
@@ -46,6 +51,7 @@ export interface Transaction {
   income_item_id: string | null;
   date: string; // YYYY-MM-DD
   description: string | null;
+  purpose: TransferPurpose | null;
   legacy_source: string | null;
   created_at: string;
   updated_at: string;
@@ -62,6 +68,7 @@ export type TransactionDraft = Pick<
   | 'income_item_id'
   | 'date'
   | 'description'
+  | 'purpose'
 >;
 
 export interface BudgetMonth {

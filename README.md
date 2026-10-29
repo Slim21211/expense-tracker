@@ -58,6 +58,8 @@ npm preview
 1. `supabase/migrations/001_ledger_schema.sql` — новые таблицы (старые не трогаются)
 2. `supabase/migrations/002_ledger_data.sql` — перенос истории + таблица сверки.
    Можно запускать повторно: перенесённое пересоздаётся, внесённое в новом интерфейсе сохраняется.
+3. `supabase/migrations/003_untracked_accounts.sql` — счета вне учёта
+4. `supabase/migrations/004_savings_debt.sql` — долг перед копилкой (назначение перевода: в долг / возврат)
 
 Откат до перехода: `supabase/migrations/rollback_ledger.sql`.
 Старые схемы и снимок прода — в `supabase/legacy/`.

@@ -62,6 +62,9 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
   const [date, setDate] = useState(initial.date ?? todayISO());
   const [description, setDescription] = useState(initial.description ?? '');
 
+  // Отметка долга у перевода: null — не трогали, берём значение по умолчанию
+  const [purposeChoice, setPurposeChoice] = useState<boolean | null>(null);
+
   // Привязка к бюджету: null — не трогали, берём из операции/контекста
   const [monthChoice, setMonthChoice] = useState<string | null>(null);
   const [incomeChoice, setIncomeChoice] = useState<string | null>(null);
@@ -115,8 +118,25 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
     return Math.round((target - adjustAccount.balance) * 100) / 100;
   })();
 
+  // Перевод из копилки на счёт может быть займом, в копилку — возвратом долга
+  const fromAccount = accounts.find((a) => a.id === effectiveFrom);
+  const toAccount = accounts.find((a) => a.id === toId);
+  const loanPossible =
+    kind === 'transfer' && fromAccount?.kind === 'savings' && toAccount?.kind === 'regular';
+  const repaymentPossible = kind === 'transfer' && toAccount?.kind === 'savings';
+  // По умолчанию: взятие из копилки — в долг; пополнение копилки — обычное
+  const purposeChecked =
+    purposeChoice ?? (initial.purpose ? true : isEdit ? false : loanPossible);
+  const purpose =
+    loanPossible && purposeChecked
+      ? 'loan'
+      : repaymentPossible && purposeChecked
+      ? 'repayment'
+      : null;
+
   const buildDraft = (): TransactionDraft | string => {
     const base = {
+      purpose: null as TransactionDraft['purpose'],
       kind,
       date,
       description: description.trim() || null,
@@ -156,7 +176,13 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
     }
     if (!effectiveFrom || !toId) return 'Выберите оба счёта';
     if (effectiveFrom === toId) return 'Счета должны различаться';
-    return { ...base, amount: value, from_account_id: effectiveFrom, to_account_id: toId };
+    return {
+      ...base,
+      amount: value,
+      from_account_id: effectiveFrom,
+      to_account_id: toId,
+      purpose,
+    };
   };
 
   const draft = buildDraft();
@@ -309,6 +335,40 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
           <>
             {accountSelect('Откуда', effectiveFrom, setFromId)}
             {accountSelect('Куда', toId, setToId)}
+            {loanPossible && fromAccount && (
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={purposeChecked}
+                  onChange={(e) => setPurposeChoice(e.target.checked)}
+                />
+                <span>
+                  Взять в долг — вернуть в копилку позже
+                  {fromAccount.debt > 0 && (
+                    <span className={styles.hint}>
+                      {' '}
+                      · уже должен {formatMoney(fromAccount.debt)}
+                    </span>
+                  )}
+                </span>
+              </label>
+            )}
+            {repaymentPossible && toAccount && (toAccount.debt > 0 || purposeChecked) && (
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={purposeChecked}
+                  onChange={(e) => setPurposeChoice(e.target.checked)}
+                />
+                <span>
+                  В счёт долга
+                  <span className={styles.hint}>
+                    {' '}
+                    · долг копилке {formatMoney(toAccount.debt)}
+                  </span>
+                </span>
+              </label>
+            )}
           </>
         )}
 

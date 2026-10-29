@@ -92,7 +92,36 @@ export const TransactionsPage = () => {
 
       {account && (
         <div className={styles.balance}>
-          {account.icon} {account.name}: <strong>{formatMoney(account.balance)}</strong>
+          <span>
+            {account.icon} {account.name}
+            {account.track_balance && (
+              <>
+                : <strong>{formatMoney(account.balance)}</strong>
+              </>
+            )}
+          </span>
+          {account.debt > 0 && (
+            <div className={styles.debt}>
+              <span>
+                Взято в долг: <strong>{formatMoney(account.debt)}</strong>
+              </span>
+              <button
+                onClick={() =>
+                  setActiveModal({
+                    defaults: {
+                      kind: 'transfer',
+                      to_account_id: account.id,
+                      amount: account.debt,
+                      purpose: 'repayment',
+                    },
+                  })
+                }
+                className={styles.addButton}
+              >
+                Погасить
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -88,6 +88,7 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
         income_item_id: effectiveIncomeId || null,
         date,
         description: description.trim() || null,
+        purpose: null,
       }).unwrap();
 
       const category = categories.find((c) => c.id === categoryId);

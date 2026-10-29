@@ -43,11 +43,19 @@ export const AccountModal = ({ onClose, account, kind: initialKind }: Props) => 
   const [isArchived, setIsArchived] = useState(account?.is_archived ?? false);
   const [trackBalance, setTrackBalance] = useState(account?.track_balance ?? true);
   const [openingBalance, setOpeningBalance] = useState('');
+  // Показываем текущий долг целиком; при сохранении меняем только ручную поправку
+  const [debtInput, setDebtInput] = useState(amountToInput(account?.debt));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     const targetAmount = target ? parseAmount(target) : null;
+    const desiredDebt = kind === 'savings' ? parseAmount(debtInput) || 0 : 0;
+    // Займы и возвраты, отмеченные в переводах, остаются как есть —
+    // поправка добирает разницу до введённого долга
+    const openingDebt = account
+      ? account.opening_debt + (desiredDebt - account.debt)
+      : desiredDebt;
 
     try {
       if (account) {
@@ -59,6 +67,7 @@ export const AccountModal = ({ onClose, account, kind: initialKind }: Props) => 
           target_amount: targetAmount,
           is_archived: isArchived,
           track_balance: trackBalance,
+          opening_debt: openingDebt,
         }).unwrap();
       } else {
         const created = await createAccount({
@@ -69,6 +78,7 @@ export const AccountModal = ({ onClose, account, kind: initialKind }: Props) => 
           target_amount: targetAmount,
           sort_order: kind === 'regular' ? 0 : kind === 'savings' ? 100 : 200,
           track_balance: trackBalance,
+          opening_debt: openingDebt,
         }).unwrap();
 
         // Начальный остаток — явная корректировка, а не число в поле
@@ -85,6 +95,7 @@ export const AccountModal = ({ onClose, account, kind: initialKind }: Props) => 
             income_item_id: null,
             date: todayISO(),
             description: kind === 'credit' ? 'Текущий долг' : 'Начальный остаток',
+            purpose: null,
           }).unwrap();
         }
       }
@@ -133,6 +144,17 @@ export const AccountModal = ({ onClose, account, kind: initialKind }: Props) => 
               {kind === 'credit' ? 'Сумма кредита' : 'Цель накопления'}
             </label>
             <AmountInput value={target} onChange={setTarget} />
+          </div>
+        )}
+
+        {kind === 'savings' && (
+          <div className={styles.field}>
+            <label className={styles.label}>Долг</label>
+            <AmountInput value={debtInput} onChange={setDebtInput} />
+            <div className={styles.hint}>
+              Займы и возвраты через переводы учитываются автоматически. Здесь можно
+              вписать уже существующий долг или поправить сумму — баланс копилки не изменится.
+            </div>
           </div>
         )}
 

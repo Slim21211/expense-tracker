@@ -4,7 +4,14 @@ import { MONEY_TAGS, toApiError, type Builder } from './types';
 
 export type AccountInput = Pick<
   Account,
-  'name' | 'kind' | 'icon' | 'color' | 'target_amount' | 'sort_order' | 'track_balance'
+  | 'name'
+  | 'kind'
+  | 'icon'
+  | 'color'
+  | 'target_amount'
+  | 'sort_order'
+  | 'track_balance'
+  | 'opening_debt'
 >;
 
 export const accountsEndpoints = (builder: Builder) => ({
@@ -17,21 +24,25 @@ export const accountsEndpoints = (builder: Builder) => ({
           .select('*')
           .order('sort_order', { ascending: true })
           .order('created_at', { ascending: true }),
-        supabase.from('account_balances').select('account_id, balance'),
+        supabase.from('account_balances').select('account_id, balance, debt'),
       ]);
 
       if (accountsResult.error) return toApiError(accountsResult.error);
       if (balancesResult.error) return toApiError(balancesResult.error);
 
-      const balances = new Map<string, number>(
-        balancesResult.data.map((b) => [b.account_id, Number(b.balance)])
+      const balances = new Map(
+        balancesResult.data.map((b) => [
+          b.account_id as string,
+          { balance: Number(b.balance), debt: Number(b.debt) },
+        ])
       );
 
       return {
         data: (accountsResult.data as Account[]).map((a) => ({
           ...a,
           target_amount: a.target_amount === null ? null : Number(a.target_amount),
-          balance: balances.get(a.id) ?? 0,
+          balance: balances.get(a.id)?.balance ?? 0,
+          debt: balances.get(a.id)?.debt ?? 0,
         })),
       };
     },

@@ -22,13 +22,15 @@ export const AccountCard = ({ account, onOpen, onEdit }: Props) => {
         : null
       : null;
 
-  const subtitle = !account.track_balance
+  const progressText = !account.track_balance
     ? 'вне учёта'
     : target > 0
     ? account.kind === 'credit'
       ? `погашено ${Math.max(0, progress ?? 0).toFixed(0)}% из ${formatMoney(target)}`
       : `${Math.max(0, progress ?? 0).toFixed(0)}% из ${formatMoney(target)}`
     : null;
+  const debtText = account.debt > 0 ? `в долгу ${formatMoney(account.debt)}` : null;
+  const subtitle = [progressText, debtText].filter(Boolean).join(' · ') || null;
 
   return (
     <div className={`${styles.item} ${account.is_archived ? styles.archived : ''}`}>

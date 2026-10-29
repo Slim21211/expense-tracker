@@ -64,7 +64,12 @@ export const TransactionList = ({
               {accountName(t.to_account_id)}
             </>
           ),
-          subtitle: 'Перевод',
+          subtitle:
+            t.purpose === 'loan'
+              ? 'В долг из копилки'
+              : t.purpose === 'repayment'
+              ? 'Возврат долга'
+              : 'Перевод',
           sign: 0,
         };
       }
