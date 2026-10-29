@@ -68,6 +68,18 @@
   --transition-base: 200ms ease;
   --transition-slow: 300ms ease;
 
+  /* Графики: проверенная категориальная палитра, порядок слотов важен
+     для различимости при дальтонизме — не переставлять */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --series-other: #a3a9b6;
+
   /* Layout */
   --control-height: 3rem;
   --bottom-nav-height: 4rem;
@@ -110,6 +122,16 @@
     --shadow-md: 0 4px 16px rgb(0 0 0 / 0.35);
     --shadow-lg: 0 10px 30px rgb(0 0 0 / 0.4);
     --shadow-xl: 0 20px 50px rgb(0 0 0 / 0.5);
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --series-other: #5b6275;
 
     color-scheme: dark;
   }

@@ -212,7 +212,15 @@
   color: var(--color-primary);
 }
 
+.mobileOnly {
+  display: flex;
+}
+
 @media (min-width: 768px) {
+  .mobileOnly {
+    display: none;
+  }
+
   // Три колонки равной ширины по краям — меню центрируется по всей странице
   .headerContent {
     display: grid;

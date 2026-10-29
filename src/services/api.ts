@@ -4,6 +4,7 @@ import { transactionsEndpoints } from './api/transactions';
 import { budgetMonthsEndpoints } from './api/budgetMonths';
 import { categoriesEndpoints } from './api/categories';
 import { incomeItemsEndpoints } from './api/incomeItems';
+import { analyticsEndpoints } from './api/analytics';
 import { baseQuery } from './api/types';
 
 export const api = createApi({
@@ -17,6 +18,7 @@ export const api = createApi({
     ...budgetMonthsEndpoints(builder),
     ...categoriesEndpoints(builder),
     ...incomeItemsEndpoints(builder),
+    ...analyticsEndpoints(builder),
   }),
 });
 
@@ -44,4 +46,6 @@ export const {
   useCreateExpenseCategoryMutation,
   useUpdateExpenseCategoryMutation,
   useDeleteExpenseCategoryMutation,
+  // Analytics
+  useGetAnalyticsQuery,
 } = api;

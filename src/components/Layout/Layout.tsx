@@ -17,8 +17,13 @@ const NAV: { to: string; icon: IconName; label: string }[] = [
   { to: '/', icon: 'wallet', label: 'Счета' },
   { to: '/months', icon: 'calendar', label: 'Бюджет' },
   { to: '/transactions', icon: 'list', label: 'Операции' },
+  { to: '/analytics', icon: 'chart', label: 'Аналитика' },
   { to: '/categories', icon: 'tag', label: 'Категории' },
 ];
+
+// В нижней панели телефона 4 места (+ кнопка расхода посередине);
+// категории там открываются из шапки
+const BOTTOM_NAV = NAV.filter((item) => item.to !== '/categories');
 
 type Sheet = null | 'quick' | 'full';
 
@@ -70,6 +75,14 @@ export const Layout = ({ children }: LayoutProps) => {
               <Icon name="plus" size={18} />
               Расход
             </button>
+            <Link
+              to="/categories"
+              className={`${styles.logoutButton} ${styles.mobileOnly}`}
+              aria-label="Категории"
+              title="Категории"
+            >
+              <Icon name="tag" size={20} />
+            </Link>
             <button
               onClick={handleSignOut}
               className={styles.logoutButton}
@@ -85,7 +98,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <main className={styles.main}>{children}</main>
 
       <nav className={styles.bottomNav}>
-        {NAV.slice(0, 2).map(navLink)}
+        {BOTTOM_NAV.slice(0, 2).map(navLink)}
         <button
           onClick={() => setSheet('quick')}
           className={styles.fab}
@@ -93,7 +106,7 @@ export const Layout = ({ children }: LayoutProps) => {
         >
           <Icon name="plus" size={28} />
         </button>
-        {NAV.slice(2).map(navLink)}
+        {BOTTOM_NAV.slice(2).map(navLink)}
       </nav>
 
       {toast && (
