@@ -1,5 +1,5 @@
 import type { MonthKey, SpendingRow } from '@/services/api/analytics';
-import type { ExpenseCategory } from '@/types/database';
+import type { Account, ExpenseCategory } from '@/types/database';
 
 // Категории в графиках: 7 самых затратных за период получают свой цвет,
 // остальные складываются в «Другое» (больше цветов не различить)
@@ -22,42 +22,65 @@ export function periodMonths(end: MonthKey, count: number): MonthKey[] {
   });
 }
 
-export const categoryKey = (id: string | null) => id ?? NO_CATEGORY;
+// Строка аналитики: категория трат, а для трат без категории из копилки —
+// сама копилка («Отпуск» → траты на отпуск)
+export interface Labeler {
+  keyOf: (row: Pick<SpendingRow, 'category_id' | 'account_id'>) => string;
+  labelOf: (key: string) => { name: string; icon: string };
+}
+
+export function makeLabeler(
+  categories: ExpenseCategory[],
+  accounts: Pick<Account, 'id' | 'name' | 'icon' | 'kind'>[]
+): Labeler {
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
+  const accountById = new Map(accounts.map((a) => [a.id, a]));
+  return {
+    keyOf: ({ category_id, account_id }) => {
+      if (category_id) return category_id;
+      const account = account_id ? accountById.get(account_id) : undefined;
+      return account && account.kind !== 'regular' ? `acc:${account.id}` : NO_CATEGORY;
+    },
+    labelOf: (key) => {
+      if (key.startsWith('acc:')) {
+        const account = accountById.get(key.slice(4));
+        return { name: account?.name ?? 'Копилка', icon: account?.icon ?? '' };
+      }
+      const category = categoryById.get(key);
+      return { name: category?.name ?? 'Без категории', icon: category?.icon ?? '' };
+    },
+  };
+}
 
 export interface SeriesInfo {
-  key: string; // id категории, NO_CATEGORY или OTHER
+  key: string; // ключ строки (см. Labeler) или OTHER
   name: string;
   icon: string;
   color: string; // CSS-переменная из палитры
 }
 
-// Цвет закреплён за категорией (по сумме за весь период), а не за её местом
+// Цвет закреплён за строкой (по сумме за переданные месяцы), а не за её местом
 // в конкретном месяце — одна категория одного цвета во всех графиках страницы
 export function buildSeries(
   spending: SpendingRow[],
-  periodKeys: Set<string>,
-  categories: ExpenseCategory[]
-): { series: SeriesInfo[]; seriesKeyOf: (categoryId: string | null) => string } {
+  monthKeys: Set<string>,
+  labeler: Labeler
+): { series: SeriesInfo[]; seriesKeyOf: (row: SpendingRow) => string } {
   const totals = new Map<string, number>();
   for (const row of spending) {
-    if (!periodKeys.has(keyOf(row))) continue;
-    const key = categoryKey(row.category_id);
+    if (!monthKeys.has(keyOf(row))) continue;
+    const key = labeler.keyOf(row);
     totals.set(key, (totals.get(key) ?? 0) + row.amount);
   }
   const ranked = [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
   const top = ranked.slice(0, MAX_SERIES);
   const hasOther = ranked.length > MAX_SERIES;
-  const byId = new Map(categories.map((c) => [c.id, c]));
 
-  const series: SeriesInfo[] = top.map((key, i) => {
-    const category = byId.get(key);
-    return {
-      key,
-      name: category?.name ?? 'Без категории',
-      icon: category?.icon ?? '',
-      color: `var(--series-${i + 1})`,
-    };
-  });
+  const series: SeriesInfo[] = top.map((key, i) => ({
+    key,
+    ...labeler.labelOf(key),
+    color: `var(--series-${i + 1})`,
+  }));
   if (hasOther) {
     series.push({ key: OTHER, name: 'Другое', icon: '', color: 'var(--series-other)' });
   }
@@ -65,8 +88,8 @@ export function buildSeries(
   const topSet = new Set(top);
   return {
     series,
-    seriesKeyOf: (categoryId) => {
-      const key = categoryKey(categoryId);
+    seriesKeyOf: (row) => {
+      const key = labeler.keyOf(row);
       return topSet.has(key) ? key : OTHER;
     },
   };

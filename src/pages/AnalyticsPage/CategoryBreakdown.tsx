@@ -1,14 +1,13 @@
 import type { MonthKey, SpendingRow } from '@/services/api/analytics';
-import type { ExpenseCategory } from '@/types/database';
 import { getMonthName } from '@/utils/dateUtils';
 import { formatMoney } from '@/utils/ledger';
 import {
-  categoryKey,
   keyOf,
   OTHER,
   percentChange,
   periodMonths,
   shortLabel,
+  type Labeler,
   type SeriesInfo,
 } from './analyticsModel';
 import styles from './AnalyticsPage.module.scss';
@@ -18,16 +17,15 @@ interface Props {
   months: MonthKey[]; // месяцы, которые можно выбрать
   onMonthChange: (month: MonthKey) => void;
   spending: SpendingRow[];
-  categories: ExpenseCategory[];
+  labeler: Labeler;
   series: SeriesInfo[];
-  seriesKeyOf: (categoryId: string | null) => string;
 }
 
-const sumByCategory = (rows: SpendingRow[], keys: Set<string>) => {
+const sumByCategory = (rows: SpendingRow[], keys: Set<string>, labeler: Labeler) => {
   const totals = new Map<string, number>();
   for (const r of rows) {
     if (!keys.has(keyOf(r))) continue;
-    const key = categoryKey(r.category_id);
+    const key = labeler.keyOf(r);
     totals.set(key, (totals.get(key) ?? 0) + r.amount);
   }
   return totals;
@@ -47,22 +45,20 @@ export const CategoryBreakdown = ({
   months,
   onMonthChange,
   spending,
-  categories,
+  labeler,
   series,
-  seriesKeyOf,
 }: Props) => {
   const [prev] = periodMonths(month, 2);
   const prevThree = periodMonths(month, 4).slice(0, 3);
 
-  const current = sumByCategory(spending, new Set([keyOf(month)]));
-  const previous = sumByCategory(spending, new Set([keyOf(prev)]));
-  const threeMonths = sumByCategory(spending, new Set(prevThree.map(keyOf)));
+  const current = sumByCategory(spending, new Set([keyOf(month)]), labeler);
+  const previous = sumByCategory(spending, new Set([keyOf(prev)]), labeler);
+  const threeMonths = sumByCategory(spending, new Set(prevThree.map(keyOf)), labeler);
 
   const total = [...current.values()].reduce((s, v) => s + v, 0);
   const prevTotal = [...previous.values()].reduce((s, v) => s + v, 0);
   const avgTotal = [...threeMonths.values()].reduce((s, v) => s + v, 0) / 3;
 
-  const byId = new Map(categories.map((c) => [c.id, c]));
   const colorOf = new Map(series.map((s) => [s.key, s.color]));
   const rows = [...current.entries()].sort((a, b) => b[1] - a[1]);
   const max = rows[0]?.[1] ?? 0;
@@ -108,9 +104,9 @@ export const CategoryBreakdown = ({
       ) : (
         <ul className={styles.list}>
           {rows.map(([key, amount]) => {
-            const category = byId.get(key);
-            const seriesKey = seriesKeyOf(key === 'none' ? null : key);
-            const color = colorOf.get(seriesKey) ?? colorOf.get(OTHER) ?? 'var(--series-other)';
+            const label = labeler.labelOf(key);
+            // Цвет — у строк из топа; остальные серые, как «Другое» на графике
+            const color = colorOf.get(key) ?? colorOf.get(OTHER) ?? 'var(--series-other)';
             const avg = (threeMonths.get(key) ?? 0) / 3;
             const meta = [
               total > 0 ? `${Math.round((amount / total) * 100)}% трат` : null,
@@ -123,7 +119,7 @@ export const CategoryBreakdown = ({
                   <span className={styles.rowName}>
                     <span className={styles.swatch} style={{ background: color }} />
                     <span>
-                      {category?.icon} {category?.name ?? 'Без категории'}
+                      {label.icon} {label.name}
                     </span>
                   </span>
                   <span className={styles.rowAmount}>{formatMoney(amount)}</span>

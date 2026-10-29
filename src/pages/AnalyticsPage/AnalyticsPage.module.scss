@@ -7,6 +7,7 @@
 }
 
 .header {
+  margin-top: var(--spacing-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -16,6 +17,14 @@
 
 .title {
   font-size: var(--font-size-2xl);
+}
+
+.sectionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .card {

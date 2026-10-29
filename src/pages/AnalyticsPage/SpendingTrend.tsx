@@ -20,7 +20,7 @@ interface Props {
   spending: SpendingRow[];
   totals: MonthTotalsRow[];
   series: SeriesInfo[];
-  seriesKeyOf: (categoryId: string | null) => string;
+  seriesKeyOf: (row: SpendingRow) => string;
 }
 
 type Point = Record<string, number | string> & { key: string; label: string; income: number };
@@ -45,7 +45,7 @@ export const SpendingTrend = ({ period, spending, totals, series, seriesKeyOf }:
   for (const row of spending) {
     const point = byKey.get(keyOf(row));
     if (!point) continue;
-    const key = seriesKeyOf(row.category_id);
+    const key = seriesKeyOf(row);
     point[key] = (point[key] as number) + row.amount;
   }
 

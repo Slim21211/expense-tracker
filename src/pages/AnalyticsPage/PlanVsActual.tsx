@@ -1,14 +1,13 @@
 import type { MonthKey, PlanRow, SpendingRow } from '@/services/api/analytics';
-import type { ExpenseCategory } from '@/types/database';
 import { formatMoney } from '@/utils/ledger';
-import { categoryKey, keyOf } from './analyticsModel';
+import { keyOf, type Labeler } from './analyticsModel';
 import styles from './AnalyticsPage.module.scss';
 
 interface Props {
   period: MonthKey[];
   spending: SpendingRow[];
   plan: PlanRow[];
-  categories: ExpenseCategory[];
+  labeler: Labeler;
 }
 
 interface Row {
@@ -19,7 +18,7 @@ interface Row {
 
 // План и факт по категориям за период: сравниваются только месяцы, где был план,
 // чтобы месяцы без бюджета не выглядели как сплошная «экономия»
-export const PlanVsActual = ({ period, spending, plan, categories }: Props) => {
+export const PlanVsActual = ({ period, spending, plan, labeler }: Props) => {
   const periodKeys = new Set(period.map(keyOf));
   const plannedMonths = new Set(plan.filter((p) => periodKeys.has(keyOf(p))).map(keyOf));
 
@@ -36,7 +35,7 @@ export const PlanVsActual = ({ period, spending, plan, categories }: Props) => {
     if (plannedMonths.has(keyOf(p))) row(p.category_id).planned += p.planned;
   }
   for (const s of spending) {
-    if (plannedMonths.has(keyOf(s))) row(categoryKey(s.category_id)).actual += s.amount;
+    if (plannedMonths.has(keyOf(s))) row(labeler.keyOf(s)).actual += s.amount;
   }
 
   // Сначала самые большие перерасходы
@@ -45,7 +44,6 @@ export const PlanVsActual = ({ period, spending, plan, categories }: Props) => {
   );
   const totalPlanned = sorted.reduce((s, r) => s + r.planned, 0);
   const totalActual = sorted.reduce((s, r) => s + r.actual, 0);
-  const byId = new Map(categories.map((c) => [c.id, c]));
   const diff = totalActual - totalPlanned;
 
   return (
@@ -75,7 +73,7 @@ export const PlanVsActual = ({ period, spending, plan, categories }: Props) => {
 
           <ul className={styles.list}>
             {sorted.map((r) => {
-              const category = byId.get(r.key);
+              const label = labeler.labelOf(r.key);
               const over = r.actual > r.planned;
               const percent = r.planned > 0 ? Math.min((r.actual / r.planned) * 100, 100) : 100;
               return (
@@ -83,7 +81,7 @@ export const PlanVsActual = ({ period, spending, plan, categories }: Props) => {
                   <div className={styles.rowLine}>
                     <span className={styles.rowName}>
                       <span>
-                        {category?.icon} {category?.name ?? 'Без категории'}
+                        {label.icon} {label.name}
                       </span>
                     </span>
                     <span className={styles.rowAmount}>{formatMoney(r.actual)}</span>

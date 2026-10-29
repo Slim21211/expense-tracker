@@ -6,7 +6,7 @@ import {
 } from '@/services/api';
 import type { MonthKey } from '@/services/api/analytics';
 import { getCurrentMonth } from '@/utils/dateUtils';
-import { buildSeries, keyOf, periodMonths } from './analyticsModel';
+import { buildSeries, keyOf, makeLabeler, periodMonths } from './analyticsModel';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { SpendingTrend } from './SpendingTrend';
 import { PlanVsActual } from './PlanVsActual';
@@ -35,9 +35,12 @@ export const AnalyticsPage = () => {
     [year, month]
   );
 
+  // Цвета закреплены за категориями по тратам за последний год и не зависят
+  // от выбранного периода — иначе переключатель перекрашивал бы все блоки
+  const labeler = useMemo(() => makeLabeler(categories, accounts), [categories, accounts]);
   const { series, seriesKeyOf } = useMemo(
-    () => buildSeries(data?.spending ?? [], new Set(period.map(keyOf)), categories),
-    [data, period, categories]
+    () => buildSeries(data?.spending ?? [], new Set(selectableMonths.map(keyOf)), labeler),
+    [data, selectableMonths, labeler]
   );
 
   if (isLoading) {
@@ -49,8 +52,20 @@ export const AnalyticsPage = () => {
 
   return (
     <div className={styles.container}>
+      <h1 className={styles.title}>Аналитика</h1>
+
+      <CategoryBreakdown
+        month={selectedMonth}
+        months={selectableMonths}
+        onMonthChange={setSelectedMonth}
+        spending={data.spending}
+        labeler={labeler}
+        series={series}
+      />
+
+      {/* Период относится только к блокам ниже: у разбивки по категориям свой месяц */}
       <div className={styles.header}>
-        <h1 className={styles.title}>Аналитика</h1>
+        <h2 className={styles.sectionLabel}>Динамика за период</h2>
         <div className={form.segmented} role="group" aria-label="Период">
           {PERIODS.map((p) => (
             <button
@@ -65,15 +80,6 @@ export const AnalyticsPage = () => {
         </div>
       </div>
 
-      <CategoryBreakdown
-        month={selectedMonth}
-        months={selectableMonths}
-        onMonthChange={setSelectedMonth}
-        spending={data.spending}
-        categories={categories}
-        series={series}
-        seriesKeyOf={seriesKeyOf}
-      />
       <SpendingTrend
         period={period}
         spending={data.spending}
@@ -85,7 +91,7 @@ export const AnalyticsPage = () => {
         period={period}
         spending={data.spending}
         plan={data.plan}
-        categories={categories}
+        labeler={labeler}
       />
       <SavingsGrowth period={period} accountFlows={data.accountFlows} accounts={accounts} />
     </div>
