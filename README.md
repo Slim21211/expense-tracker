@@ -46,8 +46,8 @@ npm preview
 
 1. Settings → Pages → Source: **GitHub Actions**.
 2. Без своего домена сайт открывается по адресу `https://<user>.github.io/<репозиторий>/`.
-3. Свой домен: Settings → Pages → Custom domain. Затем переменная репозитория
-   `BASE_PATH` = `/` (Settings → Secrets and variables → Actions → Variables) и перезапуск деплоя.
+3. Свой домен: Settings → Pages → Custom domain и перезапуск деплоя — путь приложения
+   (корень или подпапка) workflow определяет сам.
 4. В Supabase (Authentication → URL Configuration) — адрес сайта в Site URL и
    `<адрес>/reset-password` в Redirect URLs.
 

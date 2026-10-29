@@ -1,10 +1,10 @@
 # Сборка и публикация на GitHub Pages при каждом пуше в main.
 # Перед первым запуском: Settings → Pages → Source: GitHub Actions.
 #
-# Переменные репозитория (Settings → Secrets and variables → Actions → Variables):
-#   BASE_PATH          — путь приложения на сайте. Без своего домена не задавать
-#                        (будет /<репозиторий>/), со своим доменом — «/».
-#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY — необязательно, в коде есть значения по умолчанию.
+# Путь приложения на сайте определяется автоматически: со своим доменом — корень,
+# без него — /<репозиторий>/.
+# Необязательные переменные (Settings → Secrets and variables → Actions → Variables):
+#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY — в коде есть значения по умолчанию.
 
 name: Deploy to GitHub Pages
 
@@ -36,10 +36,14 @@ jobs:
 
       - run: npm ci
 
+      # Отдаёт base_path: пусто для своего домена, /<репозиторий> — для github.io
+      - id: pages
+        uses: actions/configure-pages@v5
+
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}/
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
@@ -47,8 +51,6 @@ jobs:
       # прямой заход на /months/... получит 404.html, который и есть приложение
       - name: SPA fallback
         run: cp dist/index.html dist/404.html
-
-      - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
