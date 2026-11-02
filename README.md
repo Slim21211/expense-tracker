@@ -62,6 +62,7 @@ npm preview
 4. `supabase/migrations/004_savings_debt.sql` — долг перед копилкой (назначение перевода: в долг / возврат)
 5. `supabase/migrations/005_analytics.sql` — представления для аналитики (траты, план, итоги месяцев, движение по счетам)
 6. `supabase/migrations/006_analytics_savings_spending.sql` — траты из копилок без категории считаются по копилке
+7. `supabase/migrations/007_repayment_income_and_budget_spending.sql` — возврат долга доходом в копилку; траты из копилок вне сравнения с планом
 
 Откат до перехода: `supabase/migrations/rollback_ledger.sql`.
 Старые схемы и снимок прода — в `supabase/legacy/`.

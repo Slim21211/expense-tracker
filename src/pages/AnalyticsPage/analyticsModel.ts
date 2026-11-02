@@ -27,6 +27,8 @@ export function periodMonths(end: MonthKey, count: number): MonthKey[] {
 export interface Labeler {
   keyOf: (row: Pick<SpendingRow, 'category_id' | 'account_id'>) => string;
   labelOf: (key: string) => { name: string; icon: string };
+  // Трата из бюджета месяца (с обычного счёта), а не из копилки или кредита
+  fromBudget: (row: Pick<SpendingRow, 'account_id'>) => boolean;
 }
 
 export function makeLabeler(
@@ -48,6 +50,10 @@ export function makeLabeler(
       }
       const category = categoryById.get(key);
       return { name: category?.name ?? 'Без категории', icon: category?.icon ?? '' };
+    },
+    fromBudget: ({ account_id }) => {
+      const account = account_id ? accountById.get(account_id) : undefined;
+      return !account || account.kind === 'regular';
     },
   };
 }

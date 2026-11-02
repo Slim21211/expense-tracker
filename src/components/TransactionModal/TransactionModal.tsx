@@ -120,10 +120,12 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
 
   // Перевод из копилки на счёт может быть займом, в копилку — возвратом долга
   const fromAccount = accounts.find((a) => a.id === effectiveFrom);
-  const toAccount = accounts.find((a) => a.id === toId);
+  const toAccount = accounts.find((a) => a.id === (kind === 'income' ? effectiveTo : toId));
   const loanPossible =
     kind === 'transfer' && fromAccount?.kind === 'savings' && toAccount?.kind === 'regular';
-  const repaymentPossible = kind === 'transfer' && toAccount?.kind === 'savings';
+  // Вернуть долг копилке можно переводом со счёта или доходом прямо в копилку (премия)
+  const repaymentPossible =
+    (kind === 'transfer' || kind === 'income') && toAccount?.kind === 'savings';
   // По умолчанию: взятие из копилки — в долг; пополнение копилки — обычное
   const purposeChecked =
     purposeChoice ?? (initial.purpose ? true : isEdit ? false : loanPossible);
@@ -172,7 +174,7 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
     }
     if (kind === 'income') {
       if (!effectiveTo) return 'Выберите счёт';
-      return { ...base, amount: value, to_account_id: effectiveTo };
+      return { ...base, amount: value, to_account_id: effectiveTo, purpose };
     }
     if (!effectiveFrom || !toId) return 'Выберите оба счёта';
     if (effectiveFrom === toId) return 'Счета должны различаться';
@@ -353,23 +355,24 @@ export const TransactionModal = ({ onClose, transaction, defaults }: Props) => {
                 </span>
               </label>
             )}
-            {repaymentPossible && toAccount && (toAccount.debt > 0 || purposeChecked) && (
-              <label className={styles.checkbox}>
-                <input
-                  type="checkbox"
-                  checked={purposeChecked}
-                  onChange={(e) => setPurposeChoice(e.target.checked)}
-                />
-                <span>
-                  В счёт долга
-                  <span className={styles.hint}>
-                    {' '}
-                    · долг копилке {formatMoney(toAccount.debt)}
-                  </span>
-                </span>
-              </label>
-            )}
           </>
+        )}
+
+        {repaymentPossible && toAccount && (toAccount.debt > 0 || purposeChecked) && (
+          <label className={styles.checkbox}>
+            <input
+              type="checkbox"
+              checked={purposeChecked}
+              onChange={(e) => setPurposeChoice(e.target.checked)}
+            />
+            <span>
+              В счёт долга
+              <span className={styles.hint}>
+                {' '}
+                · долг копилке {formatMoney(toAccount.debt)}
+              </span>
+            </span>
+          </label>
         )}
 
         <input

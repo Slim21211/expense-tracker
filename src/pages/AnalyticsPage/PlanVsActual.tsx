@@ -17,7 +17,8 @@ interface Row {
 }
 
 // План и факт по категориям за период: сравниваются только месяцы, где был план,
-// чтобы месяцы без бюджета не выглядели как сплошная «экономия»
+// чтобы месяцы без бюджета не выглядели как сплошная «экономия».
+// Траты из копилок не входят: они оплачены накоплениями, а не бюджетом месяца
 export const PlanVsActual = ({ period, spending, plan, labeler }: Props) => {
   const periodKeys = new Set(period.map(keyOf));
   const plannedMonths = new Set(plan.filter((p) => periodKeys.has(keyOf(p))).map(keyOf));
@@ -35,7 +36,9 @@ export const PlanVsActual = ({ period, spending, plan, labeler }: Props) => {
     if (plannedMonths.has(keyOf(p))) row(p.category_id).planned += p.planned;
   }
   for (const s of spending) {
-    if (plannedMonths.has(keyOf(s))) row(labeler.keyOf(s)).actual += s.amount;
+    if (plannedMonths.has(keyOf(s)) && labeler.fromBudget(s)) {
+      row(labeler.keyOf(s)).actual += s.amount;
+    }
   }
 
   // Сначала самые большие перерасходы
@@ -53,7 +56,7 @@ export const PlanVsActual = ({ period, spending, plan, labeler }: Props) => {
           <h2 className={styles.cardTitle}>План и факт</h2>
           <span className={styles.cardHint}>
             {plannedMonths.size > 0
-              ? `За ${plannedMonths.size} мес. с планом в выбранном периоде`
+              ? `За ${plannedMonths.size} мес. с планом · без трат из копилок`
               : 'В выбранном периоде нет месяцев с планом'}
           </span>
         </div>

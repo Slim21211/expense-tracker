@@ -8,7 +8,7 @@ export interface MonthKey {
 
 export interface SpendingRow extends MonthKey {
   category_id: string | null;
-  account_id: string | null; // счёт списания — только у трат без категории
+  account_id: string | null; // счёт списания
   amount: number;
 }
 
