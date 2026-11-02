@@ -29,7 +29,8 @@ export const AccountCard = ({ account, onOpen, onEdit }: Props) => {
       ? `погашено ${Math.max(0, progress ?? 0).toFixed(0)}% из ${formatMoney(target)}`
       : `${Math.max(0, progress ?? 0).toFixed(0)}% из ${formatMoney(target)}`
     : null;
-  const debtText = account.debt > 0 ? `в долгу ${formatMoney(account.debt)}` : null;
+  // Без копеек и с округлением вверх — чтобы строка помещалась и долг не занижался
+  const debtText = account.debt > 0 ? `в долгу ${formatMoney(Math.ceil(account.debt))}` : null;
   const subtitle = [progressText, debtText].filter(Boolean).join(' · ') || null;
 
   return (
