@@ -89,7 +89,7 @@ export const AnalyticsPage = () => {
       />
       <PlanVsActual
         period={period}
-        spending={data.spending}
+        spending={data.budgetSpending}
         plan={data.plan}
         labeler={labeler}
       />

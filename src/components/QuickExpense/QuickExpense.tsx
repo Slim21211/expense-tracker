@@ -7,7 +7,8 @@ import {
   useGetExpenseCategoriesQuery,
   useGetTransactionsQuery,
 } from '@/services/api';
-import { useBudgetContext } from '@/hooks/useBudgetContext';
+import { useBudgetChoices } from '@/hooks/useBudgetChoices';
+import { BudgetOptions } from '@/components/BudgetOptions/BudgetOptions';
 import { Icon } from '@/components/Icon/Icon';
 import type { Transaction } from '@/types/database';
 import { formatDate, todayISO } from '@/utils/dateUtils';
@@ -34,7 +35,7 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
   // Пока не пришли категории и история, порядок плиток неизвестен —
   // показываем заглушки той же высоты, чтобы шторка не прыгала
   const tilesLoading = categoriesLoading || recentLoading;
-  const budget = useBudgetContext();
+  const budget = useBudgetChoices();
   const [createTransaction, { isLoading }] = useCreateTransactionMutation();
 
   const [amount, setAmount] = useState('');
@@ -43,13 +44,20 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
   const [accountId, setAccountId] = useState('');
   const [date, setDate] = useState(todayISO());
   // null — ещё не трогали, берём доход по умолчанию
-  const [incomeItemId, setIncomeItemId] = useState<string | null>(null);
+  const [budgetChoice, setBudgetChoice] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
   const spendAccounts = accounts.filter((a) => !a.is_archived && a.track_balance);
+  // Выбранный вручную доход подставляет карту, на которую он пришёл
+  const incomeAccountId = budgetChoice ? budget.accountOf(budgetChoice) : null;
   const effectiveAccountId =
-    accountId || spendAccounts.find((a) => a.kind === 'regular')?.id || '';
-  const effectiveIncomeId = incomeItemId ?? budget.defaultIncomeId ?? '';
+    accountId ||
+    spendAccounts.find((a) => a.id === incomeAccountId)?.id ||
+    spendAccounts.find((a) => a.kind === 'regular')?.id ||
+    '';
+  const effectiveBudget =
+    budgetChoice ??
+    budget.defaultFor({ kind: 'expense', accountId: effectiveAccountId, date });
 
   // Частые категории — первыми
   const sortedCategories = useMemo(() => {
@@ -90,8 +98,7 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
         from_account_id: effectiveAccountId,
         to_account_id: null,
         category_id: categoryId,
-        budget_month_id: budget.monthId,
-        income_item_id: effectiveIncomeId || null,
+        ...budget.toFields(effectiveBudget),
         date,
         description: description.trim() || null,
         purpose: null,
@@ -188,24 +195,21 @@ export const QuickExpense = ({ onClose, onSaved, onMore }: Props) => {
               ))}
             </select>
           </label>
-          {budget.incomeItems.length > 0 && (
+          {budget.groups.length > 0 && (
             <label className={styles.chip}>
               <Icon name="income" size={16} />
-              <span>
-                {budget.incomeItems.find((i) => i.id === effectiveIncomeId)?.name ??
-                  'Без дохода'}
-              </span>
+              <span>{budget.labelOf(effectiveBudget)}</span>
               <select
-                value={effectiveIncomeId}
-                onChange={(e) => setIncomeItemId(e.target.value)}
+                value={effectiveBudget}
+                onChange={(e) => setBudgetChoice(e.target.value)}
                 className={styles.chipControl}
+                aria-label="Бюджет"
               >
-                <option value="">Без привязки к доходу</option>
-                {budget.incomeItems.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.name}
-                  </option>
-                ))}
+                <BudgetOptions
+                  groups={budget.groups}
+                  value={effectiveBudget}
+                  label={budget.labelOf(effectiveBudget)}
+                />
               </select>
             </label>
           )}

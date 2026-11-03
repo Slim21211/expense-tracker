@@ -101,7 +101,7 @@ export const IncomePlanModal = ({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !plannedDate) return;
 
     try {
       await saveIncomePlan({
@@ -110,7 +110,7 @@ export const IncomePlanModal = ({
           budget_month_id: budgetMonthId,
           name: name.trim(),
           planned_amount: parseAmount(plannedAmount) || 0,
-          planned_date: plannedDate || null,
+          planned_date: plannedDate,
         },
         plans: rows
           .filter((r) => r.target)
@@ -171,11 +171,12 @@ export const IncomePlanModal = ({
             <AmountInput value={plannedAmount} onChange={setPlannedAmount} />
           </label>
           <label className={styles.field}>
-            <span className={styles.label}>Дата</span>
+            <span className={styles.label}>Дата поступления</span>
             <input
               type="date"
               value={plannedDate}
               onChange={(e) => setPlannedDate(e.target.value)}
+              required
             />
           </label>
         </div>
@@ -250,10 +251,14 @@ export const IncomePlanModal = ({
         <div className={styles.actions}>
           <button
             type="submit"
-            disabled={isLoading || !name.trim()}
+            disabled={isLoading || !name.trim() || !plannedDate}
             className={styles.primaryBtn}
           >
-            {isLoading ? 'Сохранение...' : 'Сохранить'}
+            {isLoading
+              ? 'Сохранение...'
+              : name.trim() && !plannedDate
+              ? 'Укажите дату поступления'
+              : 'Сохранить'}
           </button>
         </div>
       </form>

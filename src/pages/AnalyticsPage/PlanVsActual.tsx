@@ -19,6 +19,8 @@ interface Row {
 // План и факт по категориям за период: сравниваются только месяцы, где был план,
 // чтобы месяцы без бюджета не выглядели как сплошная «экономия».
 // Траты из копилок не входят: они оплачены накоплениями, а не бюджетом месяца
+// Траты — по месяцу бюджета, а не по дате: трата из октябрьского аванса
+// 3 ноября сравнивается с октябрьским планом
 export const PlanVsActual = ({ period, spending, plan, labeler }: Props) => {
   const periodKeys = new Set(period.map(keyOf));
   const plannedMonths = new Set(plan.filter((p) => periodKeys.has(keyOf(p))).map(keyOf));

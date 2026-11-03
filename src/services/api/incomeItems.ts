@@ -23,6 +23,16 @@ export type IncomePlanSource = IncomeItem & {
   plans: ExpenseItem[];
 };
 
+// Доход как источник денег для операции: когда и на какой счёт он фактически пришёл
+export interface IncomeChoice {
+  id: string;
+  name: string;
+  budget_month_id: string;
+  planned_date: string | null;
+  received_date: string | null; // дата последнего поступления по доходу
+  received_account_id: string | null; // счёт, на который оно пришло
+}
+
 type PlanFields = Pick<ExpenseItem, 'category_id' | 'target_account_id' | 'planned_amount'>;
 
 const planFields = (p: ExpenseItem): PlanFields => ({
@@ -50,6 +60,33 @@ export const incomeItemsEndpoints = (builder: Builder) => ({
       };
     },
     providesTags: ['BudgetMonths'],
+  }),
+
+  // Все доходы с их поступлениями — для выбора бюджета операции.
+  // Из привязанных операций берутся только поступления (kind = 'income')
+  getIncomeChoices: builder.query<IncomeChoice[], void>({
+    async queryFn() {
+      const { data, error } = await supabase
+        .from('income_items')
+        .select('id, name, budget_month_id, planned_date, transactions(date, to_account_id)')
+        .eq('transactions.kind', 'income');
+
+      if (error) return toApiError(error);
+      type Row = Omit<IncomeChoice, 'received_date' | 'received_account_id'> & {
+        transactions: { date: string; to_account_id: string | null }[];
+      };
+      return {
+        data: (data as Row[]).map(({ transactions, ...income }) => {
+          const last = [...transactions].sort((a, b) => b.date.localeCompare(a.date))[0];
+          return {
+            ...income,
+            received_date: last?.date ?? null,
+            received_account_id: last?.to_account_id ?? null,
+          };
+        }),
+      };
+    },
+    providesTags: ['BudgetMonths', 'Transactions'],
   }),
 
   // Копирует все доходы и планы одного месяца в другой: названия месяцев

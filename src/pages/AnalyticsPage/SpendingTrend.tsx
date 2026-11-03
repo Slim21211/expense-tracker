@@ -60,7 +60,7 @@ export const SpendingTrend = ({ period, spending, totals, series, seriesKeyOf }:
       <div className={styles.cardHeader}>
         <div>
           <h2 className={styles.cardTitle}>Траты и доход по месяцам</h2>
-          <span className={styles.cardHint}>Месяц — месяц бюджета</span>
+          <span className={styles.cardHint}>По дате операции</span>
         </div>
       </div>
 

@@ -39,6 +39,7 @@ export const {
   // Income plans
   useSaveIncomePlanMutation,
   useGetRecentIncomePlansQuery,
+  useGetIncomeChoicesQuery,
   useCopyMonthPlansMutation,
   useDeleteIncomeItemMutation,
   // Categories

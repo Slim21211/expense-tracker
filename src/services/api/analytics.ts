@@ -28,7 +28,8 @@ export interface AccountFlowRow extends MonthKey {
 }
 
 export interface AnalyticsData {
-  spending: SpendingRow[];
+  spending: SpendingRow[]; // по месяцу даты операции
+  budgetSpending: SpendingRow[]; // по месяцу бюджета — для сравнения с планом
   plan: PlanRow[];
   months: MonthTotalsRow[];
   accountFlows: AccountFlowRow[];
@@ -43,23 +44,25 @@ const num = <T extends object>(rows: T[], fields: (keyof T)[]): T[] =>
   });
 
 export const analyticsEndpoints = (builder: Builder) => ({
-  // Готовые итоги из представлений analytics_* (миграция 005)
+  // Готовые итоги из представлений analytics_* (миграции 005–008)
   getAnalytics: builder.query<AnalyticsData, void>({
     async queryFn() {
-      const [spending, plan, months, flows] = await Promise.all([
+      const [spending, budgetSpending, plan, months, flows] = await Promise.all([
         supabase.from('analytics_spending').select('*'),
+        supabase.from('analytics_budget_spending').select('*'),
         supabase.from('analytics_plan').select('*'),
         supabase.from('analytics_months').select('*'),
         supabase.from('analytics_account_flows').select('*'),
       ]);
 
-      for (const r of [spending, plan, months, flows]) {
+      for (const r of [spending, budgetSpending, plan, months, flows]) {
         if (r.error) return toApiError(r.error);
       }
 
       return {
         data: {
           spending: num(spending.data as SpendingRow[], ['amount', 'year', 'month']),
+          budgetSpending: num(budgetSpending.data as SpendingRow[], ['amount', 'year', 'month']),
           plan: num(plan.data as PlanRow[], ['planned', 'year', 'month']),
           months: num(months.data as MonthTotalsRow[], ['income', 'spending', 'year', 'month']),
           accountFlows: num(flows.data as AccountFlowRow[], ['delta', 'year', 'month']),
